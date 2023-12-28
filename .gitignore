@@ -1,0 +1,11 @@
+/.vscode/
+/build/
+/cmake_build/
+/*.xcodeproj
+/*.pdx
+/Source/pdex.dylib
+/Source/pdex.elf
+/Source/pdex.bin
+/Source/pdex.dll
+luacheck.py
+.python-version
