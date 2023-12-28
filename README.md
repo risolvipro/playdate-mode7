@@ -15,7 +15,7 @@ Playdate Mode7 is a library designed to recreate the graphics mode known as "Mod
 ## Lua setup
 
 The library has a simplified Lua setup:
-* Locate the pre-compiled binaries for your platform in the *builds/[platform]* folder
+* Locate the pre-compiled binaries for your platform in the *platforms/[platform]* folder
 * Copy the files (elf, dylib, dll) into the Source folder of the project
 * Import the library: `import mode7`
 
