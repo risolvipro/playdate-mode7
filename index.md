@@ -1,4 +1,4 @@
-## Playdate Mode7
+## Documentation
 
 * [Lua API Documentation](Lua-API.html)
 * [C API Documentation](C-API.html)
