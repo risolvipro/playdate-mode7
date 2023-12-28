@@ -1,0 +1,380 @@
+body {
+    --label-color: #000;
+    --secondary-label-color: rgba(40,40,40,0.8);
+    --background-color: #fff;
+    --secondary-background-color: rgba(120,120,120,0.1);
+    --separator-color: rgba(80,80,80,0.1);
+    --tint-color: #6a5ce0;
+    --line-height-medium: 1.4;
+
+    color: var(--label-color);
+    background: var(--background-color);
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 0;
+    margin: 0;
+    line-height: 1.2;
+    font-size:16px;
+}
+
+p {
+    line-height: var(--line-height-medium);
+}
+
+h1, h2, h3 {
+    padding: 0;
+    margin: 0;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 0.5em;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 0.4em;
+}
+
+p {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: underline;
+    color: var(--tint-color);
+}
+
+pre {
+    font-size: 0.9em;
+}
+
+ul {
+    padding: 0 0 0 1em;
+    margin: 1em 0;
+}
+
+.columns {
+    width: 100%;
+    max-width: 1200px;
+    --menu-width: 260px;
+    --menu-indent: 260px;
+    margin: auto;
+}
+
+.column-menu {
+    width: var(--menu-width);
+    height: 100vh;
+    position: fixed;
+    top: 0px;
+    border-right: 1px solid var(--separator-color);
+    overflow-y: auto;
+}
+
+.menu ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.menu ul li {
+    margin-bottom: 8px;
+}
+
+#menu-sidebar ul li.active a {
+    font-weight: bold;
+    border-bottom:2px solid var(--tint-color);
+}
+
+#menu-sidebar ul li a {
+    border-bottom:2px solid transparent;
+}
+
+#menu-sidebar ul li:not(.active) a:hover {
+    text-decoration: underline;
+}
+
+.menu ul li.last {
+    margin-bottom: 0px;
+}
+
+.menu ul li a {
+    padding: 2px 0px;
+    display: inline-block;
+    color: var(--label-color);
+    text-decoration: none;
+}
+
+.menu ul li:not(.active) a:hover {
+    text-decoration: underline;
+}
+
+.column-menu .menu {
+    padding: 25px 25px;
+}
+
+.column-menu .menu-container {
+    padding-bottom: 25px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--separator-color);
+}
+
+.menu-mobile {
+    margin-bottom: 2.2em;
+    display: none;
+}
+
+.menu-mobile .menu-container {
+    display: inline-block;
+    background-color: var(--secondary-background-color);
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 1.2em;
+}
+
+.secondary-docs a {
+    color:var(--secondary-label-color);
+    text-decoration: none;
+}
+
+.secondary-docs a:hover {
+    text-decoration: underline;
+}
+
+.column-page {
+    width: 100%;
+    padding-left: var(--menu-indent);
+    box-sizing: border-box;
+}
+
+.page-container {
+    width: 100%;
+    padding-top: 35px;
+    padding-left: 40px;
+    padding-right: 40px;
+    padding-bottom: 50px;
+    box-sizing: border-box;
+}
+
+section {
+    margin-bottom: 2.5em;
+}
+
+section.last {
+    margin-bottom: 0;
+}
+
+section h2 {
+    scroll-margin-top: 30px;
+}
+
+.page-description {
+    margin-bottom: 2em;
+}
+
+.section-description {
+    margin-bottom: 1.5em;
+}
+
+.section-description p {
+    margin-bottom: 0.4em;
+}
+
+.section-description > p:last-child {
+    margin-bottom: 0px !important;
+}
+
+.definition {
+    scroll-margin-top: 20px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    background: var(--secondary-background-color);
+    padding: 8px 18px 16px 18px;
+}
+
+.definition-header {
+    border-bottom: 1px solid var(--separator-color);
+    margin-bottom: 0.7em;
+}
+
+.definition-language {
+    border-radius:3px;
+    background-color: var(--tint-color);
+    font-size:0.8em;
+    color:#fff;
+    padding: 2px 8px;
+    margin-right:0.5em;
+    top: -0.1em;
+    position: relative;
+    display: none;
+}
+
+.definition-permalink {
+    padding: 0px 6px;
+    margin-left: 0.1em;
+    text-decoration: none;
+    display: none;
+}
+
+.definition.collapsed .definition-language {
+    display: inline;
+}
+
+.definition.collapsed .definition-permalink {
+    display: inline;
+}
+
+.definition-title-label {
+    font-family: monospace;
+    font-weight: bold;
+    word-break: break-word;
+}
+
+.definition-header-more {
+    border-top: 1px solid var(--separator-color);
+    padding-top: 0.5em;
+    padding-bottom:0.5em;
+    display: none;
+}
+
+.definition-header-more.visible {
+    display: block;
+}
+
+.more-button {
+    padding: 2px;
+    display: block;
+}
+
+.more-button.up {
+    transform:rotate(180deg);
+}
+
+.definition-header-primary {
+    display: flex;
+    align-items: center;
+}
+
+.definition-header-left {
+    width: 100%;
+}
+
+.definition-header-left .definition-title {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.definition-return-type {
+    font-size: 0.85em;
+    vertical-align: middle;
+    color: var(--tint-color);
+}
+
+.definition-content {
+    padding-left: 0.8em;
+}
+
+.definition-block.last {
+    margin-bottom: 0px;
+}
+
+.definition-description {
+    line-height: var(--line-height-medium);
+    margin-bottom: 0.4em;
+}
+
+.definition-description p {
+    margin-bottom: 0.4em;
+}
+
+.definition-description p:last-child {
+    margin-bottom: 0px !important;
+}
+
+.definition-note {
+    padding: 10px;
+    background-color: var(--background-color);
+    margin: 0.3em 0 0.3em 0;
+    border-radius: 4px;
+}
+
+.definition-code {
+    margin: 0.5em 0 0 0;
+}
+
+.quote {
+    overflow-x: auto;
+    line-height:var(--line-height-medium);
+    margin: 1em 0;
+    padding: 12px;
+    background-color: var(--secondary-background-color);
+}
+
+.quote.inline {
+    padding: 8px 0px;
+    background: none;
+}
+
+.quote.no-margins {
+    margin:0;
+}
+
+.code {
+    overflow-x: auto;
+    line-height:var(--line-height-medium);
+    margin: 1em 0;
+    padding: 12px;
+    background-color: var(--secondary-background-color);
+}
+
+.code.inline {
+    padding: 8px 0px;
+    background: none;
+}
+
+.code.no-margins {
+    margin:0;
+}
+
+.definition-link {
+    word-break: break-all;
+}
+
+.icon {
+    display: block;
+    height: auto;
+}
+
+.icon--small {
+    width: 22px;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        --label-color: #fff;
+        --secondary-label-color: rgba(200,200,200,0.6);
+        --background-color:rgb(40,40,40);
+        --secondary-background-color: rgba(160,160,160,0.1);
+        --separator-color: rgb(140,140,140,0.4);
+        --tint-color: #6681ef;
+    }
+}
+
+@media only screen and (max-width: 880px) {
+    .column-menu {
+        display: none;
+    }
+    .columns {
+        --menu-indent: 0px;
+    }
+    .page-container {
+        padding-top: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .menu-mobile {
+        display: block;
+    }
+}
