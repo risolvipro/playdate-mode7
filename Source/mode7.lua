@@ -17,7 +17,7 @@ mode7.color.kSpaceGrayscale = 0
 
 --- Creates a new grayscale color.
 ---
---- https://risolvipro.github.io/mode7-playdate/Lua-API.html#def-color-grayscale-new
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-color-grayscale-new
 ---@param gray integer
 ---@param alpha integer
 ---@return mode7.color
@@ -32,7 +32,7 @@ end
 
 --- Returns a new default configuration for the world.
 ---
---- https://risolvipro.github.io/mode7-playdate/Lua-API.html#def-world-defaultConfiguration
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-defaultConfiguration
 ---@return mode7.world.configuration
 mode7.world.defaultConfiguration = function()
     return {
@@ -45,7 +45,7 @@ end
 
 --- Creates a new world with the given configuration. By default, a world has a main display and a main camera.
 ---
---- https://risolvipro.github.io/mode7-playdate/Lua-API.html#def-world-new
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-new
 ---@param configuration mode7.world.configuration
 ---@return mode7.world
 mode7.world.new = function(configuration)
@@ -57,7 +57,7 @@ end
 
 --- Returns the plane color to be used for the out-of-bounds space.
 ---
---- https://risolvipro.github.io/mode7-playdate/Lua-API.html#def-world-getPlaneFillColor
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getPlaneFillColor
 ---@return mode7.color
 function mode7.world:getPlaneFillColor()
     local gray, alpha = self:_getPlaneFillColor()
@@ -66,7 +66,7 @@ end
 
 --- Sets the plane color to be used for the out-of-bounds space.
 ---
---- https://risolvipro.github.io/mode7-playdate/Lua-API.html#def-world-setPlaneFillColor
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-setPlaneFillColor
 ---@param color mode7.color
 function mode7.world:setPlaneFillColor(color)
     self:_setPlaneFillColor(color.gray, color.alpha)
