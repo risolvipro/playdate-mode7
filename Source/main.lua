@@ -30,6 +30,9 @@ function newWorld()
     local display = world:getMainDisplay()
     local camera = display:getCamera()
 
+    --display:setRect(0, 0, 240, 400)
+    --display:setOrientation(mode7.display.kOrientationPortrait)
+
     local backgroundImage = mode7.image.new("images/background")
     display:getBackground():setImage(backgroundImage)
 
@@ -126,8 +129,9 @@ function playdate.update()
     local size = visibleSprites:size()
     for i=1, size do
         local instance = visibleSprites:get(i)
+        print(instance:getDisplayRect())
     end
-    ]]
+    --]]
     
     world:draw()
 

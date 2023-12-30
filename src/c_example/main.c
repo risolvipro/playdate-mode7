@@ -76,6 +76,9 @@ PDMode7_World *newWorld(void)
     PDMode7_Display *display = mode7->world->getMainDisplay(world);
     PDMode7_Camera *camera = mode7->display->getCamera(display);
     
+    //mode7->display->setRect(display, 0, 0, LCD_ROWS, LCD_COLUMNS);
+    //mode7->display->setOrientation(display, kMode7DisplayOrientationPortrait);
+
     backgroundImage = playdate->graphics->loadBitmap("images/background", NULL);
 
     PDMode7_Background *background = mode7->display->getBackground(display);

@@ -167,7 +167,9 @@ typedef struct {
 typedef struct {
     PDMode7_World *world;
     PDMode7_Rect rect;
-    int needsClip;
+    PDMode7_Rect absoluteRect;
+    PDMode7_DisplayOrientation orientation;
+    LCDBitmap *secondaryFramebuffer;
     PDMode7_Camera *camera;
     PDMode7_DisplayScale scale;
     _PDMode7_Array *visibleInstances;
@@ -223,6 +225,8 @@ static PDMode7_WorldConfiguration defaultWorldConfiguration(void);
 static PDMode7_Camera* newCamera(void);
 static PDMode7_Display* newDisplay(int x, int y, int width, int height);
 static void displaySetRect(PDMode7_Display *display, int x, int y, int width, int height);
+static void displaySetOrientation(PDMode7_Display *display, PDMode7_DisplayOrientation orientation);
+static int displayNeedsClip(PDMode7_Display *display);
 static int indexForDisplay(PDMode7_World *world, PDMode7_Display *display);
 static int addDisplay(PDMode7_World *world, PDMode7_Display *display);
 static inline PDMode7_Rect newRect(int x, int y, int width, int height);
@@ -238,10 +242,11 @@ static float worldGetRelativePitch(PDMode7_Vec3 cameraPoint, float cameraPitch, 
 static PDMode7_Vec2 displayToPlanePoint(PDMode7_Display *pDisplay, int displayX, int displayY, _PDMode7_Parameters *p);
 static PDMode7_Vec3 worldToDisplayPoint(PDMode7_Display *pDisplay, PDMode7_Vec3 point, _PDMode7_Parameters *p);
 static PDMode7_Vec3 displayMultiplierForScanlineAt(PDMode7_Display *pDisplay, PDMode7_Vec3 point, _PDMode7_Parameters *p);
-static inline void worldSetColor(uint8_t *ptr, PDMode7_DisplayScale scale, uint8_t color, int bitPosition, uint8_t patternRow);
+static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScale scale, uint8_t color, int bitPosition, uint8_t patternRow);
 static void getDisplayScaleStep(PDMode7_DisplayScale scale, int *xStep, int *yStep);
 static inline PDMode7_DisplayScale truncatedDisplayScale(PDMode7_DisplayScale scale);
 static PDMode7_Camera* displayGetCamera(PDMode7_Display *display);
+static void displayGetFramebuffer(PDMode7_Display *display, LCDBitmap **target, uint8_t **framebuffer, int *rowbytes);
 static _PDMode7_Parameters worldGetParameters(PDMode7_Display *pDisplay);
 static float worldGetScaleInv(PDMode7_World *pWorld);
 static float worldGetScale(PDMode7_World *pWorld);
@@ -643,7 +648,10 @@ static void drawBackground(PDMode7_Display *pDisplay, _PDMode7_Parameters *param
     
     PDMode7_Vec2 offset = backgroundGetOffset(pBackground, parameters);
     
-    playdate->graphics->pushContext(NULL);
+    LCDBitmap *target;
+    displayGetFramebuffer(pDisplay, &target, NULL, NULL);
+    
+    playdate->graphics->pushContext(target);
     playdate->graphics->setClipRect(display->rect.x, display->rect.y, display->rect.width, parameters->horizon);
 
     playdate->graphics->drawBitmap(background->bitmap, display->rect.x + offset.x, offset.y, kBitmapUnflipped);
@@ -669,11 +677,12 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
     _PDMode7_World *world = pWorld->prv;
     _PDMode7_Display *display = pDisplay->prv;
     
-    uint8_t *framebuffer = playdate->graphics->getFrame();
+    LCDBitmap *target; uint8_t *framebuffer; int rowbytes;
+    displayGetFramebuffer(pDisplay, &target, &framebuffer, &rowbytes);
     
     // Set the framebuffer initial offset
     int startY = display->rect.y + parameters->horizon;
-    int frameStart = startY * LCD_ROWSIZE + display->rect.x / 8;
+    int frameStart = startY * rowbytes + display->rect.x / 8;
     
     int xStep; int yStep;
     getDisplayScaleStep(display->scale, &xStep, &yStep);
@@ -682,7 +691,7 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
     float displayWidthInv = 1.0f / display->rect.width * xStep;
 
     // Calculate the framebuffer increment
-    int rowSize = LCD_ROWSIZE * yStep;
+    int rowSize = rowbytes * yStep;
     
     for(int y = 0; y < parameters->planeHeight; y += yStep)
     {
@@ -732,7 +741,7 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
                 color = bitmap->data[bitmap->width * mapY + mapX];
             }
             
-            worldSetColor((framebuffer + frameOffset), displayScale, color, bitPosition, (absoluteY & 3));
+            worldSetColor((framebuffer + frameOffset), rowbytes, displayScale, color, bitPosition, (absoluteY & 3));
             
             // Advance the point by the step
             leftPoint.x += dxStep;
@@ -749,11 +758,13 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
         }
         
         // Increment the frame index
-        
         frameStart += rowSize;
     }
     
-    playdate->graphics->markUpdatedRows(parameters->horizon, parameters->horizon + parameters->planeHeight);
+    if(!target)
+    {
+        playdate->graphics->markUpdatedRows(parameters->horizon, parameters->horizon + parameters->planeHeight);
+    }
 }
 
 static void drawSprite(PDMode7_SpriteInstance *pInstance)
@@ -811,9 +822,18 @@ static void worldDraw(PDMode7_World *pWorld, PDMode7_Display *pDisplay)
     _PDMode7_Display *display = pDisplay->prv;
     _PDMode7_Parameters parameters = worldGetParameters(pDisplay);
     
-    if(display->needsClip)
+    LCDBitmap *target;
+    displayGetFramebuffer(pDisplay, &target, NULL, NULL);
+    
+    playdate->graphics->pushContext(target);
+    
+    if(target)
     {
-        playdate->graphics->pushContext(NULL);
+        playdate->graphics->clear(kColorWhite);
+    }
+    
+    if(!target && displayNeedsClip(pDisplay))
+    {
         playdate->graphics->setClipRect(display->rect.x, display->rect.y, display->rect.width, display->rect.height);
     }
     
@@ -821,13 +841,34 @@ static void worldDraw(PDMode7_World *pWorld, PDMode7_Display *pDisplay)
     drawPlane(pWorld, pDisplay, &parameters);
     drawSprites(pDisplay);
     
-    if(display->needsClip)
+    playdate->graphics->popContext();
+    
+    if(target)
     {
-        playdate->graphics->popContext();
+        switch(display->orientation)
+        {
+            case kMode7DisplayOrientationLandscapeRight:
+            {
+                playdate->graphics->drawBitmap(target, LCD_COLUMNS - (display->absoluteRect.width + display->absoluteRect.x), LCD_ROWS - (display->absoluteRect.height + display->absoluteRect.y), kBitmapFlippedXY);
+                break;
+            }
+            case kMode7DisplayOrientationPortrait:
+            {
+                playdate->graphics->drawRotatedBitmap(target, LCD_COLUMNS - (display->absoluteRect.height + display->absoluteRect.y), display->absoluteRect.x, 90, 0, 0, 1, 1);
+                break;
+            }
+            case kMode7DisplayOrientationPortraitUpsideDown:
+            {
+                playdate->graphics->drawRotatedBitmap(target, display->absoluteRect.y, LCD_ROWS - (display->absoluteRect.width + display->absoluteRect.x), -90, 0, 0, 1, 1);
+                break;
+            }
+            default:
+                break;
+        }
     }
 }
 
-static inline void worldSetColor(uint8_t *ptr, PDMode7_DisplayScale displayScale, uint8_t color, int bitPosition, uint8_t patternRow)
+static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScale displayScale, uint8_t color, int bitPosition, uint8_t patternRow)
 {
     uint8_t patternIndex = ((color % 16) > 8) ? (color / 16 + 1) : (color / 16);
 
@@ -859,7 +900,7 @@ static inline void worldSetColor(uint8_t *ptr, PDMode7_DisplayScale displayScale
             uint8_t mask = 0b00000011 << (6 - bitPosition);
             
             *ptr = (*ptr & ~mask) | (pattern1 & mask);
-            ptr += LCD_ROWSIZE;
+            ptr += rowbytes;
             *ptr = (*ptr & ~mask) | (pattern2 & mask);
 
             break;
@@ -881,7 +922,7 @@ static inline void worldSetColor(uint8_t *ptr, PDMode7_DisplayScale displayScale
             uint8_t mask = 0b00001111 << (4 - bitPosition);
             
             *ptr = (*ptr & ~mask) | (pattern1 & mask);
-            ptr += LCD_ROWSIZE;
+            ptr += rowbytes;
             *ptr = (*ptr & ~mask) | (pattern2 & mask);
             
             break;
@@ -1286,11 +1327,15 @@ static PDMode7_Display* newDisplay(int x, int y, int width, int height)
     _display->world = NULL;
     _display->camera = NULL;
     _display->rect = newRect(0, 0, 0, 0);
+    _display->absoluteRect = newRect(0, 0, 0, 0);
     _display->scale = kMode7DisplayScale2x2;
+    _display->orientation = kMode7DisplayOrientationLandscapeLeft;
+    _display->secondaryFramebuffer = NULL;
     
     _display->visibleInstances = newArray();
     
     displaySetRect(display, x, y, width, height);
+    displaySetOrientation(display, kMode7DisplayOrientationLandscapeLeft);
     
     PDMode7_Background *background = playdate->system->realloc(NULL, sizeof(PDMode7_Background));
     _display->background = background;
@@ -1354,6 +1399,32 @@ static PDMode7_Background* displayGetBackground(PDMode7_Display *display)
     return ((_PDMode7_Display*)display->prv)->background;
 }
 
+
+static int displayNeedsClip(PDMode7_Display *display)
+{
+    _PDMode7_Display *_display = display->prv;
+    return (_display->rect.width < LCD_COLUMNS || _display->rect.height < LCD_ROWS);
+}
+
+static void displayRectDidChange(PDMode7_Display *display)
+{
+    _PDMode7_Display *_display = display->prv;
+    
+    if(_display->secondaryFramebuffer)
+    {
+        playdate->graphics->freeBitmap(_display->secondaryFramebuffer);
+        _display->secondaryFramebuffer = NULL;
+    }
+    
+    _display->rect = _display->absoluteRect;
+    
+    if(_display->orientation != kMode7DisplayOrientationLandscapeLeft)
+    {
+        _display->secondaryFramebuffer = playdate->graphics->newBitmap(_display->absoluteRect.width, _display->absoluteRect.height, kColorWhite);
+        _display->rect = newRect(0, 0, _display->absoluteRect.width, _display->absoluteRect.height);
+    }
+}
+
 static PDMode7_Rect displayGetRect(PDMode7_Display *display)
 {
     return ((_PDMode7_Display*)display->prv)->rect;
@@ -1365,12 +1436,24 @@ static void displaySetRect(PDMode7_Display *display, int x, int y, int width, in
     
     // x and width should be multiple of 8
     
-    _display->rect.x = x / 8 * 8;
-    _display->rect.y = y;
-    _display->rect.width = width / 8 * 8;
-    _display->rect.height = height;
+    _display->absoluteRect.x = x / 8 * 8;
+    _display->absoluteRect.y = y;
+    _display->absoluteRect.width = width / 8 * 8;
+    _display->absoluteRect.height = height;
     
-    _display->needsClip = (_display->rect.width < LCD_COLUMNS || _display->rect.height < LCD_ROWS);
+    displayRectDidChange(display);
+}
+
+static PDMode7_DisplayOrientation displayGetOrientation(PDMode7_Display *display)
+{
+    return ((_PDMode7_Display*)display->prv)->orientation;
+}
+
+static void displaySetOrientation(PDMode7_Display *display, PDMode7_DisplayOrientation orientation)
+{
+    _PDMode7_Display *_display = display->prv;
+    _display->orientation = orientation;
+    displayRectDidChange(display);
 }
 
 static int displayGetHorizon(PDMode7_Display *pDisplay)
@@ -1382,6 +1465,91 @@ static int displayGetHorizon(PDMode7_Display *pDisplay)
 static PDMode7_World* displayGetWorld(PDMode7_Display *display)
 {
     return ((_PDMode7_Display*)display->prv)->world;
+}
+
+static PDMode7_Vec2 displayConvertPointFromOrientation(PDMode7_Display *pDisplay, float x, float y)
+{
+    _PDMode7_Display *display = pDisplay->prv;
+    switch(display->orientation)
+    {
+        case kMode7DisplayOrientationLandscapeRight:
+        {
+            return newVec2(display->rect.width - x, display->rect.height - y);
+            break;
+        }
+        case kMode7DisplayOrientationPortrait:
+        {
+            return newVec2(display->rect.height - y, x);
+            break;
+        }
+        case kMode7DisplayOrientationPortraitUpsideDown:
+        {
+            return newVec2(y, display->rect.width - x);
+            break;
+        }
+        default:
+        {
+            return newVec2(x, y);
+            break;
+        }
+    }
+}
+
+static PDMode7_Vec2 displayConvertPointToOrientation(PDMode7_Display *pDisplay, float x, float y)
+{
+    _PDMode7_Display *display = pDisplay->prv;
+    switch(display->orientation)
+    {
+        case kMode7DisplayOrientationLandscapeRight:
+        {
+            return newVec2(display->rect.width - x, display->rect.height - y);
+            break;
+        }
+        case kMode7DisplayOrientationPortrait:
+        {
+            return newVec2(y, display->rect.height - x);
+            break;
+        }
+        case kMode7DisplayOrientationPortraitUpsideDown:
+        {
+            return newVec2(display->rect.width - y, x);
+            break;
+        }
+        default:
+        {
+            return newVec2(x, y);
+            break;
+        }
+    }
+}
+
+static void displayGetFramebuffer(PDMode7_Display *display, LCDBitmap **target, uint8_t **framebuffer, int *rowbytes)
+{
+    _PDMode7_Display *_display = display->prv;
+    
+    if(!_display->secondaryFramebuffer)
+    {
+        if(target)
+        {
+            *target = NULL;
+        }
+        if(framebuffer)
+        {
+            *framebuffer = playdate->graphics->getFrame();
+        }
+        if(rowbytes)
+        {
+            *rowbytes = LCD_ROWSIZE;
+        }
+    }
+    else
+    {
+        if(target)
+        {
+            *target = _display->secondaryFramebuffer;
+        }
+        playdate->graphics->getBitmapData(_display->secondaryFramebuffer, NULL, NULL, rowbytes, NULL, framebuffer);
+    }
 }
 
 static void removeDisplay(PDMode7_Display *pDisplay)
@@ -1543,6 +1711,11 @@ static void freeDisplay(PDMode7_Display *display)
     if(!_display->isManaged)
     {
         removeDisplay(display);
+        
+        if(_display->secondaryFramebuffer)
+        {
+            playdate->graphics->freeBitmap(_display->secondaryFramebuffer);
+        }
         
         if(_display->camera)
         {
@@ -3227,6 +3400,45 @@ static int lua_displaySetRect(lua_State *L)
     return 0;
 }
 
+static int lua_displayGetOrientation(lua_State *L)
+{
+    PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
+    PDMode7_DisplayOrientation orientation = displayGetOrientation(display);
+    playdate->lua->pushInt(orientation);
+    return 1;
+}
+
+static int lua_displaySetOrientation(lua_State *L)
+{
+    PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
+    PDMode7_DisplayOrientation orientation = playdate->lua->getArgInt(2);
+    displaySetOrientation(display, orientation);
+    return 0;
+}
+
+
+static int lua_displayConvertPointFromOrientation(lua_State *L)
+{
+    PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
+    float x = playdate->lua->getArgFloat(2);
+    float y = playdate->lua->getArgFloat(3);
+    PDMode7_Vec2 point = displayConvertPointFromOrientation(display, x, y);
+    playdate->lua->pushFloat(point.x);
+    playdate->lua->pushFloat(point.y);
+    return 2;
+}
+
+static int lua_displayConvertPointToOrientation(lua_State *L)
+{
+    PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
+    float x = playdate->lua->getArgFloat(2);
+    float y = playdate->lua->getArgFloat(3);
+    PDMode7_Vec2 point = displayConvertPointToOrientation(display, x, y);
+    playdate->lua->pushFloat(point.x);
+    playdate->lua->pushFloat(point.y);
+    return 2;
+}
+
 static int lua_removeDisplay(lua_State *L)
 {
     PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
@@ -3249,8 +3461,12 @@ static const lua_reg lua_display[] = {
     { "setScale", lua_displaySetScale },
     { "getRect", lua_displayGetRect },
     { "setRect", lua_displaySetRect },
+    { "getOrientation", lua_displayGetOrientation },
+    { "setOrientation", lua_displaySetOrientation },
     { "getBackground", lua_displayGetBackground },
     { "getHorizon", lua_displayGetHorizon },
+    { "convertPointFromOrientation", lua_displayConvertPointFromOrientation },
+    { "convertPointToOrientation", lua_displayConvertPointToOrientation },
     { "getWorld", lua_displayGetWorld },
     { "removeFromWorld", lua_removeDisplay },
     { "__gc", lua_freeDisplay },
@@ -3449,7 +3665,7 @@ static int lua_arrayGet(lua_State *L)
 {
     _PDMode7_LuaArray *luaArray = playdate->lua->getArgObject(1, lua_kArray, NULL);
     int i = playdate->lua->getArgInt(2);
-    if(i > 0)
+    if(i > 0 && (i - 1) < luaArray->array->length)
     {
         void *item = luaArray->array->items[i - 1];
         switch(luaArray->type)
@@ -3464,7 +3680,8 @@ static int lua_arrayGet(lua_State *L)
             }
         }
     }
-    return 0;
+    playdate->lua->pushNil();
+    return 1;
 }
 
 static int lua_arraySize(lua_State *L)
@@ -4229,12 +4446,16 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->display->newDisplay = newDisplay; // LUACHECK
     mode7->display->getRect = displayGetRect; // LUACHECK
     mode7->display->setRect = displaySetRect; // LUACHECK
+    mode7->display->getOrientation = displayGetOrientation; // LUACHECK
+    mode7->display->setOrientation = displaySetOrientation; // LUACHECK
     mode7->display->getCamera = displayGetCamera; // LUACHECK
     mode7->display->setCamera = displaySetCamera; // LUACHECK
     mode7->display->getScale = displayGetScale; // LUACHECK
     mode7->display->setScale = displaySetScale; // LUACHECK
     mode7->display->getHorizon = displayGetHorizon; // LUACHECK
     mode7->display->getBackground = displayGetBackground; // LUACHECK
+    mode7->display->convertPointFromOrientation = displayConvertPointFromOrientation; // LUACHECK
+    mode7->display->convertPointToOrientation = displayConvertPointToOrientation; // LUACHECK
     mode7->display->getWorld = displayGetWorld; // LUACHECK
     mode7->display->removeFromWorld = removeDisplay; // LUACHECK
     

@@ -42,6 +42,13 @@ typedef enum {
 } PDMode7_DisplayScale;
 
 typedef enum {
+    kMode7DisplayOrientationLandscapeLeft,
+    kMode7DisplayOrientationLandscapeRight,
+    kMode7DisplayOrientationPortrait,
+    kMode7DisplayOrientationPortraitUpsideDown
+} PDMode7_DisplayOrientation;
+
+typedef enum {
     kMode7SpriteDataSourceFrame,
     kMode7SpriteDataSourceAngle,
     kMode7SpriteDataSourcePitch,
@@ -155,12 +162,16 @@ typedef struct PDMode7_Display_API {
     PDMode7_Display*(*newDisplay)(int x, int y, int width, int height);
     PDMode7_Rect(*getRect)(PDMode7_Display *display);
     void(*setRect)(PDMode7_Display *display, int x, int y, int width, int height);
+    PDMode7_DisplayOrientation(*getOrientation)(PDMode7_Display *display);
+    void(*setOrientation)(PDMode7_Display *display, PDMode7_DisplayOrientation orientation);
     PDMode7_Camera*(*getCamera)(PDMode7_Display *display);
     void(*setCamera)(PDMode7_Display *display, PDMode7_Camera *camera);
     PDMode7_Background*(*getBackground)(PDMode7_Display *display);
     PDMode7_DisplayScale(*getScale)(PDMode7_Display *display);
     void(*setScale)(PDMode7_Display *display, PDMode7_DisplayScale scale);
     int(*getHorizon)(PDMode7_Display *display);
+    PDMode7_Vec2(*convertPointFromOrientation)(PDMode7_Display *display, float x, float y);
+    PDMode7_Vec2(*convertPointToOrientation)(PDMode7_Display *display, float x, float y);
     PDMode7_World*(*getWorld)(PDMode7_Display *display);
     void(*removeFromWorld)(PDMode7_Display *display);
 } PDMode7_Display_API;

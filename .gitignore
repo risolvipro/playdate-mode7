@@ -3,9 +3,8 @@
 /cmake_build/
 /*.xcodeproj
 /*.pdx
-/Source/pdex.dylib
-/Source/pdex.elf
-/Source/pdex.bin
-/Source/pdex.dll
+/Source/pdex.*
+/blender/output/
+/blender/*.blend1
 luacheck.py
 .python-version

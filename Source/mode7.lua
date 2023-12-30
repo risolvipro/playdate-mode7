@@ -80,6 +80,11 @@ mode7.display.kScale2x2 = 2
 mode7.display.kScale4x1 = 3
 mode7.display.kScale4x2 = 4
 
+mode7.display.kOrientationLandscapeLeft = 0
+mode7.display.kOrientationLandscapeRight = 1
+mode7.display.kOrientationPortrait = 2
+mode7.display.kOrientationPortraitUpsideDown = 3
+
 -- Sprite
 
 mode7.sprite.datasource.kFrame = 0

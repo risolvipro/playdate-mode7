@@ -14,14 +14,19 @@ scale_min = 20
 scale_step = 10
 
 yaw_rotations = 18
-pitch_rotations = 8
+pitch_rotations = 1
 
 parent_name = "Camera Parent"
 folder_name = "output"
 
 # Config END
 
-output_dir = bpy.path.abspath(os.sep + os.sep + folder_name)
+def quote_arg(str):
+    if os.name == "nt":
+        return '"' + str + '"'
+    return shlex.quote(str)
+
+output_dir = bpy.path.abspath("//" + folder_name)
 
 if os.path.isdir(output_dir):
     shutil.rmtree(output_dir)
@@ -53,16 +58,16 @@ for yaw_iter in range(yaw_rotations):
         
         # Resize
         for scale_iter in range(number_of_scales):
-            width = scale_max - scale_iter * scale_step
+            width = round(scale_max - scale_iter * scale_step)
             height = round(width * im.size[1] / im.size[0])
             
             image_path = output_dir + os.sep + name + "-table-" + str(i) + ".png"  
             
-            command = "magick " + shlex.quote(render_path) + " "
+            command = "magick " + quote_arg(render_path) + " "
             command += "-resize "+ str(width) + "x" + str(height) + " "
             command += "-colorspace gray -ordered-dither o4x4" + " "
-            command += shlex.quote(image_path)
-            
+            command += quote_arg(image_path)
+                
             os.system(command)
             
             i += 1

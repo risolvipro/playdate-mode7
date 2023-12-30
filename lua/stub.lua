@@ -14,6 +14,10 @@ mode7.world.configuration = {}
 ---@field kScale2x2 integer 2
 ---@field kScale4x1 integer 3
 ---@field kScale4x2 integer 4
+---@field kOrientationLandscapeLeft integer 0
+---@field kOrientationLandscapeRight integer 1
+---@field kOrientationPortrait integer 2
+---@field kOrientationPortraitUpsideDown integer 3
 mode7.display = {}
 
 ---@class mode7.background
@@ -105,8 +109,10 @@ function mode7.world:getPlaneBitmap() return {} end
 ---@param y number
 ---@param z number
 ---@param display mode7.display?
----@return mode7.color
-function mode7.world:worldToDisplayPoint(x, y, z, display) return {} end
+---@return number displayX
+---@return number displayY
+---@return number displayZ
+function mode7.world:worldToDisplayPoint(x, y, z, display) return 0, 0, 0 end
 
 --- Converts a display point to a plane point.
 ---
@@ -214,6 +220,21 @@ function mode7.display:setRect(x, y, width, height) end
 ---@return integer height
 function mode7.display:getRect() return 0, 0, 0, 0 end
 
+--- Sets the display orientation, default value is "landscape left".
+--- You should set the display rect relative to the orientation. E.g. for a portrait display, the rect is x = 0, y = 0, width = 240, height = 400.
+--- Functions such as world:worldToDisplayPoint return display coordinates relative to the orientation as well.
+--- You can use display:convertPointFromOrientation to convert a point from the orientation coordinate system.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-setOrientation
+---@param orientation integer
+function mode7.display:setOrientation(orientation) end
+
+--- Gets the display orientation.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getOrientation
+---@return integer
+function mode7.display:getOrientation() return 0 end
+
 --- Sets the camera to the display.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-setCamera
@@ -252,6 +273,24 @@ function mode7.display:getBackground() return {} end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getHorizon
 ---@return integer
 function mode7.display:getHorizon() return 0 end
+
+--- It converts a point from the orientation coordinate system, to the standard coordinate system. For a portrait orientation, the portrait point (0, 0) is converted to the standard point (400, 0).
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-convertPointFromOrientation
+---@param x number
+---@param y number
+---@return number x
+---@return number y
+function mode7.display:convertPointFromOrientation(x, y) return 0, 0 end
+
+--- It converts a point from the standard coordinate system, to the orientation coordinate system. For a portrait orientation, the standard point (0, 0) is converted to the portrait point (0, 400).
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-convertPointToOrientation
+---@param x number
+---@param y number
+---@return number x
+---@return number y
+function mode7.display:convertPointToOrientation(x, y) return 0, 0 end
 
 --- Returns the world associated to the display.
 ---
@@ -596,7 +635,7 @@ function mode7.sprite.instance:setVisible(visible) end
 function mode7.sprite.instance:isVisible() return false end
 
 --- Sets the sprite frame index for the instance. If you want to animate your sprite, use this property to set the animation frame (starting from 0).
---- Animation length must be set in the data source by calling Lua-API.html#def-spriteDataSource-setLengthForKey with the mode7.sprite.datasource.kFrame key.
+--- Animation length must be set in the data source by calling sprite.instance.datasource:setLengthForKey with the mode7.sprite.datasource.kFrame key.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setFrame
 ---@param frame number
@@ -608,19 +647,19 @@ function mode7.sprite.instance:setFrame(frame) end
 ---@return integer
 function mode7.sprite.instance:getFrame() return 0 end
 
---- Gets the sprite center for the instance.
----
---- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-getImageCenter
----@return number cx
----@return number cy
-function mode7.sprite.instance:getImageCenter() return 0, 0 end
-
 --- Sets the image center (0.0 - 1.0) for the instance. Use this property to adjust the sprite position on screen, default value is (0.5, 0.5).
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setImageCenter
 ---@param cx number
 ---@param cy number
 function mode7.sprite.instance:setImageCenter(cx, cy) end
+
+--- Gets the sprite center for the instance.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-getImageCenter
+---@return number cx
+---@return number cy
+function mode7.sprite.instance:getImageCenter() return 0, 0 end
 
 --- Sets the sprite rounding increment for the instance. This value is used for rounding the position on screen to the nearest integer. Default value is 1.
 ---
@@ -650,7 +689,7 @@ function mode7.sprite.instance:setAlignment(alignmentX, alignmentY) end
 ---@return integer alignmentY
 function mode7.sprite.instance:getAlignment() return 0, 0 end
 
---- Sets the image table for the instance. You should use Lua-API.html#def-luaImageTable-new to load it, you can't directly pass a Playdate image table.
+--- Sets the image table for the instance. You should use mode7.imagetable.new to load it, you can't directly pass a Playdate image table.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setBitmapTable
 ---@param imageTable mode7.imagetable?
