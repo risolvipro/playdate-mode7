@@ -134,13 +134,21 @@ ul {
     margin-bottom: 1.2em;
 }
 
-.secondary-docs a {
+.menu-footer a {
     color:var(--secondary-label-color);
     text-decoration: none;
 }
 
-.secondary-docs a:hover {
+.menu-footer a:hover {
     text-decoration: underline;
+}
+
+.secondary-docs {
+    margin-bottom: 0.5em;
+}
+
+.version {
+    font-size: 0.9em;
 }
 
 .column-page {

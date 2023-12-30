@@ -27,8 +27,9 @@
                                             <li class="last" data-section-id="blender"><a href="#section-blender">Blender</a></li>
                     </ul>
     </div>
-    <div class="secondary-docs">
-        <a href="Lua-API.html">Lua API Documentation</a>
+    <div class="menu-footer">
+        <div class="secondary-docs"><a href="Lua-API.html">Go to Lua API</a></div>
+        <div class="version">1.1.0</div>
     </div>
 </div>        </div>
         <div class="column-page">
@@ -55,8 +56,9 @@
                                             <li class="last" data-section-id="blender"><a href="#section-blender">Blender</a></li>
                     </ul>
     </div>
-    <div class="secondary-docs">
-        <a href="Lua-API.html">Lua API Documentation</a>
+    <div class="menu-footer">
+        <div class="secondary-docs"><a href="Lua-API.html">Go to Lua API</a></div>
+        <div class="version">1.1.0</div>
     </div>
 </div>                </div>
 
@@ -637,6 +639,48 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                                                     </div>
                             </div>
                                                     
+                            <div id="def-display-setOrientation" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->display->setOrientation(PDMode7_Display *display, PDMode7_DisplayOrientation orientation);</span><a href="C-API.html#def-display-setOrientation" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-display-setOrientation"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-display-setOrientation">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.display:setOrientation(orientation)</span><a href="Lua-API.html#def-display-setOrientation" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the display orientation, default value is "landscape left".</p><p>You should set the display rect relative to the orientation. E.g. for a portrait display, the rect is x = 0, y = 0, width = 240, height = 400.</p><p>Functions such as <a class="definition-link" href="#def-world-worldToDisplayPoint">world->worldToDisplayPoint</a> return display coordinates relative to the orientation as well.</p><p>You can use <a class="definition-link" href="#def-display-convertPointFromOrientation">display->convertPointFromOrientation</a> to convert a point from the orientation coordinate system.</p></div>
+                                                                                                                    <div class="definition-block definition-code last"><pre class="code inline no-margins">typedef enum {
+   kMode7DisplayOrientationLandscapeLeft,
+   kMode7DisplayOrientationLandscapeRight,
+   kMode7DisplayOrientationPortrait,
+   kMode7DisplayOrientationPortraitUpsideDown,
+} PDMode7_DisplayOrientation;</pre></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-display-getOrientation" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_DisplayOrientation mode7->display->getOrientation(PDMode7_Display *display);</span><a href="C-API.html#def-display-getOrientation" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-display-getOrientation"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-display-getOrientation">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.display:getOrientation() <span class="definition-return-type">mode7.display.kOrientation</span></span><a href="Lua-API.html#def-display-getOrientation" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the display orientation.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
                             <div id="def-display-setCamera" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
@@ -749,6 +793,42 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Returns the y position of the horizon, relative to the current display.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-display-convertPointFromOrientation" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec2 mode7->display->convertPointFromOrientation(PDMode7_Display *display, float x, float y);</span><a href="C-API.html#def-display-convertPointFromOrientation" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-display-convertPointFromOrientation"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-display-convertPointFromOrientation">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.display:convertPointFromOrientation(x, y) <span class="definition-return-type">x, y</span></span><a href="Lua-API.html#def-display-convertPointFromOrientation" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>It converts a point from the orientation coordinate system, to the standard coordinate system. For a portrait orientation, the portrait point (0, 0) is converted to the standard point (400, 0).</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-display-convertPointToOrientation" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec2 mode7->display->convertPointToOrientation(PDMode7_Display *display, float x, float y);</span><a href="C-API.html#def-display-convertPointToOrientation" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-display-convertPointToOrientation"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-display-convertPointToOrientation">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.display:convertPointToOrientation(x, y) <span class="definition-return-type">x, y</span></span><a href="Lua-API.html#def-display-convertPointToOrientation" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>It converts a point from the standard coordinate system, to the orientation coordinate system. For a portrait orientation, the standard point (0, 0) is converted to the portrait point (0, 400).</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -1874,24 +1954,6 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                                                     </div>
                             </div>
                                                     
-                            <div id="def-spriteInstance-getImageCenter" class="definition" definition>
-                                <div class="definition-header">
-                                    <div class="definition-header-primary">
-                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec2 mode7->spriteInstance->getImageCenter(PDMode7_SpriteInstance *instance);</span><a href="C-API.html#def-spriteInstance-getImageCenter" class="definition-permalink" permalink>#</a></div></div>
-                                        <div class="definition-header-right">
-                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-getImageCenter"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="5 9 12 16 19 9"></polyline>
-</svg></a>
-                                        </div>
-                                    </div>
-                                                                            <div class="definition-header-more" id="more-spriteInstance-getImageCenter">
-                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite.instance:getImageCenter() <span class="definition-return-type">cx, cy</span></span><a href="Lua-API.html#def-spriteInstance-getImageCenter" class="definition-permalink" permalink>#</a></div>                                        </div>
-                                                                    </div>
-                                <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the sprite center for the instance.</p></div>
-                                                                    </div>
-                            </div>
-                                                    
                             <div id="def-spriteInstance-setImageCenter" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
@@ -1907,6 +1969,24 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Sets the image center (0.0 - 1.0) for the instance. Use this property to adjust the sprite position on screen, default value is (0.5, 0.5).</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-spriteInstance-getImageCenter" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec2 mode7->spriteInstance->getImageCenter(PDMode7_SpriteInstance *instance);</span><a href="C-API.html#def-spriteInstance-getImageCenter" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-getImageCenter"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-spriteInstance-getImageCenter">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite.instance:getImageCenter() <span class="definition-return-type">cx, cy</span></span><a href="Lua-API.html#def-spriteInstance-getImageCenter" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the sprite center for the instance.</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -2391,8 +2471,8 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                 </section>
                                                 <section class="last">
                     <h2 id="section-blender">⚙️ Blender</h2>
-                    <div class="section-description"><p>You can use Blender to automatically generate a sprite image table. A Python script for Blender is included in the <i>blender</i> folder of the library.</p><p>On macOS you need to launch Blender from the command line:</p><pre class="quote">cd /Applications/Blender.app/Contents/MacOS
-./Blender</pre><ul><li><p>Install <i>ImageMagick</i></p></li><li><p>Create a new project and add a cube at (0,0,0), this cube will be used to rotate the camera.</p></li><li><p>Rename it to "Camera Parent".</p></li><li><p>Add a camera and point it towards the cube, you can adjust the distance and orientation to fit your needs.</p></li><li><p>While pressing SHIFT, select the camera and then the cube, right-click Parent > Object.</p></li><li><p>Paste and run the script.</p></li></ul></div>
+                    <div class="section-description"><p>You can use Blender to automatically generate a sprite image table. A Blender project is included in the <i>blender</i> folder of the library.</p><p>On macOS you need to launch Blender from the command line:</p><pre class="quote">cd /Applications/Blender.app/Contents/MacOS
+./Blender</pre><ul><li><p>Install Blender 4.0+</p></li><li><p>Install <i>ImageMagick</i></p></li><li><p>Open the project in Blender and switch to the <i>Scripting</i> tab</p></li><li><p>Run the script</p></li><li><p>The image table will be saved in <i>blender/output</i></p></li></ul></div>
                     <div class="definitions">
                                             </div>
                 </section>
