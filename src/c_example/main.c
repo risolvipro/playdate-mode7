@@ -78,7 +78,8 @@ PDMode7_World *newWorld(void)
     
     //mode7->display->setRect(display, 0, 0, LCD_ROWS, LCD_COLUMNS);
     //mode7->display->setOrientation(display, kMode7DisplayOrientationPortrait);
-
+    //mode7->camera->setFOV(camera, M_PI_2 / 2);
+    
     backgroundImage = playdate->graphics->loadBitmap("images/background", NULL);
 
     PDMode7_Background *background = mode7->display->getBackground(display);
@@ -132,7 +133,7 @@ static int update(void *userdata)
         angle += angleDelta;
     }
     
-    float moveDelta = 200 * dt;
+    float moveDelta = 100 * dt;
     float moveVelocity = 0;
     
     if(pressed & kButtonUp)

@@ -30,8 +30,9 @@ function newWorld()
     local display = world:getMainDisplay()
     local camera = display:getCamera()
 
-    --display:setRect(0, 0, 240, 400)
-    --display:setOrientation(mode7.display.kOrientationPortrait)
+    -- display:setRect(0, 0, 240, 400)
+    -- display:setOrientation(mode7.display.kOrientationPortrait)
+    -- camera:setFOV(math.rad(45))
 
     local backgroundImage = mode7.image.new("images/background")
     display:getBackground():setImage(backgroundImage)
