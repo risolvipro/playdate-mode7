@@ -95,3 +95,14 @@ mode7.sprite.datasource.kScale = 3
 mode7.sprite.kAlignmentNone = 0
 mode7.sprite.kAlignmentEven = 1
 mode7.sprite.kAlignmentOdd = 2
+
+-- Bitmap
+
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-colorAt
+---@param x integer
+---@param y integer
+---@return mode7.color
+function mode7.bitmap:colorAt(x, y)
+    local gray, alpha = self:_colorAt(x, y)
+    return mode7.color.grayscale.new(gray, alpha)
+end

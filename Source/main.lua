@@ -19,7 +19,7 @@ function newWorld()
 
     local bitmap = mode7.bitmap.loadPGM("images/track-0.pgm")
     world:setPlaneBitmap(bitmap)
-    
+
     world:setPlaneFillColor(mode7.color.grayscale.new(60, 255))
 
     local imageTable = mode7.imagetable.new("images/full-car")
@@ -40,6 +40,21 @@ function newWorld()
     camera:setPosition(220, 1200, 12)
     camera:setAngle(math.rad(-90))
 
+    --[[
+    local coinBitmap = mode7.bitmap.loadPGM("images/coin.pgm")
+    local coinMask = mode7.bitmap.loadPGM("images/coin-mask.pgm")
+    coinBitmap:setMask(coinMask)
+
+    local coinLayer1 = mode7.bitmap.layer.new(coinBitmap)
+    coinLayer1:setPosition(200, 1100)
+
+    local coinLayer2 = mode7.bitmap.layer.new(coinBitmap)
+    coinLayer2:setPosition(220, 1100)
+
+    bitmap:addLayer(coinLayer1)
+    bitmap:addLayer(coinLayer2)
+    --]]
+    
     return world
 end
 

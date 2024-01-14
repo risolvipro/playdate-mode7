@@ -65,6 +65,10 @@ typedef struct PDMode7_Bitmap {
     void *prv;
 } PDMode7_Bitmap;
 
+typedef struct PDMode7_BitmapLayer {
+    void *prv;
+} PDMode7_BitmapLayer;
+
 typedef struct PDMode7_WorldConfiguration {
     float width;
     float height;
@@ -119,7 +123,7 @@ typedef struct PDMode7_World_API {
     PDMode7_Color(*getPlaneFillColor)(PDMode7_World *world);
     void(*setPlaneFillColor)(PDMode7_World *world, PDMode7_Color color);
     PDMode7_Vec3(*worldToDisplayPoint)(PDMode7_World *world, PDMode7_Vec3 point, PDMode7_Display *display);
-    PDMode7_Vec2(*displayToPlanePoint)(PDMode7_World *world, int displayX, int displayY, PDMode7_Display *display);
+    PDMode7_Vec3(*displayToPlanePoint)(PDMode7_World *world, int displayX, int displayY, PDMode7_Display *display);
     PDMode7_Vec2(*planeToBitmapPoint)(PDMode7_World *world, float pointX, float pointY);
     PDMode7_Vec2(*bitmapToPlanePoint)(PDMode7_World *world, float bitmapX, float bitmapY);
     PDMode7_Vec3(*displayMultiplierForScanlineAt)(PDMode7_World *world, PDMode7_Vec3 point, PDMode7_Display *display);
@@ -232,7 +236,7 @@ typedef struct PDMode7_SpriteInstance_API {
     void(*setAlignment)(PDMode7_SpriteInstance *instance, PDMode7_SpriteAlignment alignmentX, PDMode7_SpriteAlignment alignmentY);
     void(*setBitmapTable)(PDMode7_SpriteInstance *instance, LCDBitmapTable *bitmapTable);
     LCDBitmapTable*(*getBitmapTable)(PDMode7_SpriteInstance *instance);
-    void(*setDrawFunction)(PDMode7_SpriteInstance *instance, PDMode7_SpriteDrawCallbackFunction callback);
+    void(*setDrawFunction)(PDMode7_SpriteInstance *instance, PDMode7_SpriteDrawCallbackFunction *callback);
     unsigned int(*getFrame)(PDMode7_SpriteInstance *instance);
     void(*setFrame)(PDMode7_SpriteInstance *instance, unsigned int frame);
     LCDBitmap*(*getBitmap)(PDMode7_SpriteInstance *instance);
@@ -259,10 +263,29 @@ typedef struct PDMode7_Color_API {
     PDMode7_Color(*newGrayscaleColor)(uint8_t gray, uint8_t alpha);
 } PDMode7_Color_API;
 
+typedef struct PDMode7_BitmapLayer_API {
+    PDMode7_BitmapLayer*(*newLayer)(PDMode7_Bitmap *bitmap);
+    PDMode7_Bitmap*(*getBitmap)(PDMode7_BitmapLayer *layer);
+    void(*setBitmap)(PDMode7_BitmapLayer *layer, PDMode7_Bitmap *bitmap);
+    void(*getPosition)(PDMode7_BitmapLayer *layer, int *x, int *y);
+    void(*setPosition)(PDMode7_BitmapLayer *layer, int x, int y);
+    int(*isVisible)(PDMode7_BitmapLayer *layer);
+    void(*setVisible)(PDMode7_BitmapLayer *layer, int visible);
+    void(*invalidate)(PDMode7_BitmapLayer *layer);
+    void(*removeFromBitmap)(PDMode7_BitmapLayer *layer);
+    void(*freeLayer)(PDMode7_BitmapLayer *layer);
+} PDMode7_BitmapLayer_API;
+
 typedef struct PDMode7_Bitmap_API {
     PDMode7_Bitmap*(*loadPGM)(const char *filename);
     void(*getSize)(PDMode7_Bitmap *bitmap, int *width, int *height);
+    PDMode7_Color(*colorAt)(PDMode7_Bitmap *bitmap, int x, int y);
+    PDMode7_Bitmap*(*getMask)(PDMode7_Bitmap *bitmap);
+    void(*setMask)(PDMode7_Bitmap *bitmap, PDMode7_Bitmap *mask);
+    void(*addLayer)(PDMode7_Bitmap *bitmap, PDMode7_BitmapLayer *layer);
+    PDMode7_BitmapLayer**(*getLayers)(PDMode7_Bitmap *bitmap, int *length);
     void(*freeBitmap)(PDMode7_Bitmap *bitmap);
+    PDMode7_BitmapLayer_API *layer;
 } PDMode7_Bitmap_API;
 
 typedef struct PDMode7_API {

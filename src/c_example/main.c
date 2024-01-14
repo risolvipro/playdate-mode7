@@ -85,7 +85,7 @@ PDMode7_World *newWorld(void)
     PDMode7_Background *background = mode7->display->getBackground(display);
     mode7->background->setBitmap(background, backgroundImage);
     
-    mode7->camera->setPosition(camera, 219, 1300, 12);
+    mode7->camera->setPosition(camera, 219, 1200, 12);
     mode7->camera->setAngle(camera, -M_PI_2);
     mode7->camera->setClipDistanceUnits(camera, 4);
 
@@ -117,7 +117,7 @@ static int update(void *userdata)
     
     PDButtons pressed; PDButtons pushed;
     playdate->system->getButtonState(&pressed, &pushed, NULL);
-
+    
     PDMode7_Display *display = mode7->world->getMainDisplay(world);
     PDMode7_Camera *camera = mode7->display->getCamera(display);
     

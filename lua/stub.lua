@@ -26,6 +26,9 @@ mode7.background = {}
 ---@class mode7.bitmap
 mode7.bitmap = {}
 
+---@class mode7.bitmap.layer
+mode7.bitmap.layer = {}
+
 ---@class mode7.pool
 mode7.pool = {}
 
@@ -76,6 +79,12 @@ function mode7.world:_setPlaneFillColor(gray, alpha) end
 ---@return integer alpha
 function mode7.world:_getPlaneFillColor() return 0, 0 end
 
+---@param x integer
+---@param y integer
+---@return integer gray
+---@return integer alpha
+function mode7.bitmap:_colorAt(x, y) return 0, 0 end
+
 --- Returns the world size.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getSize
@@ -114,7 +123,7 @@ function mode7.world:getPlaneBitmap() return {} end
 ---@return number displayZ
 function mode7.world:worldToDisplayPoint(x, y, z, display) return 0, 0, 0 end
 
---- Converts a display point to a plane point.
+--- Converts a display point to a plane point. The z component of the returned value is 0 if the display point is on the plane, -1 if the display point is not on the plane.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-displayToPlanePoint
 ---@param displayX number
@@ -122,7 +131,8 @@ function mode7.world:worldToDisplayPoint(x, y, z, display) return 0, 0, 0 end
 ---@param display mode7.display?
 ---@return number planeX
 ---@return number planeY
-function mode7.world:displayToPlanePoint(displayX, displayY, display) return 0, 0 end
+---@return number planeZ
+function mode7.world:displayToPlanePoint(displayX, displayY, display) return 0, 0, 0 end
 
 --- Returns a multiplier that can be used to convert a length on a scanline, from the world coordinate system to the display coordinate system. This function is used to calculate the size of a sprite on display.
 --- The z component of the multiplier is 1 if the point is in front of the camera or -1 if the point is behind the camera.
@@ -179,7 +189,7 @@ function mode7.world:update() end
 ---@param display mode7.display?
 function mode7.world:draw(display) end
 
---- Returns a mode7.array (not a Lua array) of all sprites added to world.
+--- Returns a mode7.array (not a Lua array) of all sprites added to the world.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getSprites
 ---@return mode7.array
@@ -345,8 +355,8 @@ function mode7.background:setCenter(cx, cy) end
 --- Gets the background center.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-background-getCenter
----@return number x
----@return number y
+---@return number cx
+---@return number cy
 function mode7.background:getCenter() return 0, 0 end
 
 --- Loads a PGM file at the given path, it returns NULL if the file can't be opened.
@@ -364,6 +374,87 @@ function mode7.bitmap.loadPGM(path) return {} end
 ---@return integer width
 ---@return integer height
 function mode7.bitmap:getSize() return 0, 0 end
+
+--- Sets a mask for the bitmap (transparent pixels are black).
+--- You can create a mask with ImageMagick:
+--- magick input.png -alpha extract mask.pgm
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-setMask
+---@param mask mode7.bitmap
+function mode7.bitmap:setMask(mask) end
+
+--- Gets the bitmap mask.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-getMask
+---@return mode7.bitmap mask
+function mode7.bitmap:getMask() return {} end
+
+--- Adds a layer to the bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-addLayer
+---@param layer mode7.bitmap.layer
+function mode7.bitmap:addLayer(layer) end
+
+--- Returns a mode7.array (not a Lua array) of all layers added to the bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-getLayers
+---@return mode7.array
+function mode7.bitmap:getLayers() return {} end
+
+--- Creates a new layer with the given bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-newLayer
+---@param bitmap mode7.bitmap
+---@return mode7.bitmap.layer
+function mode7.bitmap.layer.new(bitmap) return {} end
+
+--- Sets a bitmap for the layer.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-setBitmap
+---@param bitmap mode7.bitmap
+function mode7.bitmap.layer:setBitmap(bitmap) end
+
+--- Gets the bitmap of the layer.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-getBitmap
+---@return mode7.bitmap
+function mode7.bitmap.layer:getBitmap() return {} end
+
+--- Sets the left-top position of the layer.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-setPosition
+---@param x integer
+---@param y integer
+function mode7.bitmap.layer:setPosition(x, y) end
+
+--- Gets the layer position.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-getPosition
+---@return integer x
+---@return integer y
+function mode7.bitmap.layer:getPosition() return 0, 0 end
+
+--- Sets the layer visibility.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-setVisible
+---@param visible boolean
+function mode7.bitmap.layer:setVisible(visible) end
+
+--- Gets the layer visibility.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-isVisible
+---@return boolean
+function mode7.bitmap.layer:isVisible() return false end
+
+--- Invalidates the layer forcing a redraw. This function is needed only for special cases, such as setting a new mask for the bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-invalidate
+function mode7.bitmap.layer:invalidate() end
+
+--- Removes the layer from the bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-removeFromBitmap
+function mode7.bitmap.layer:removeFromBitmap() end
 
 --- Resize the pool to the given size in bytes. We recommend to call this function only once.
 ---
@@ -463,7 +554,7 @@ function mode7.camera:lookAtPoint(x, y, z) end
 ---@return mode7.sprite
 function mode7.sprite.new(width, height, depth) return {} end
 
---- Gets the sprite instance for the given sprite and display.
+--- Gets the sprite instance for the given display.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-getInstance
 ---@param display mode7.display?
