@@ -284,6 +284,7 @@ typedef struct PDMode7_Bitmap_API {
     void(*setMask)(PDMode7_Bitmap *bitmap, PDMode7_Bitmap *mask);
     void(*addLayer)(PDMode7_Bitmap *bitmap, PDMode7_BitmapLayer *layer);
     PDMode7_BitmapLayer**(*getLayers)(PDMode7_Bitmap *bitmap, int *length);
+    void(*removeAllLayers)(PDMode7_Bitmap *bitmap);
     void(*freeBitmap)(PDMode7_Bitmap *bitmap);
     PDMode7_BitmapLayer_API *layer;
 } PDMode7_Bitmap_API;

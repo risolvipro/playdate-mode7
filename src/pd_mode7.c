@@ -16,9 +16,6 @@
 #define MODE7_SPRITE_DSOURCE_LEN 4
 #define MODE7_ANGLE_E 0.00001f
 
-#define MODE7_MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MODE7_MIN(x, y) (((x) < (y)) ? (x) : (y))
-
 PDMode7_API *mode7;
 static PlaydateAPI *playdate;
 
@@ -208,6 +205,7 @@ typedef struct _PDMode7_Bitmap {
     PDMode7_Bitmap *mask;
     _PDMode7_Array *layers;
     LuaUDObject *luaRef;
+    int released;
 } _PDMode7_Bitmap;
 
 typedef struct {
@@ -245,6 +243,16 @@ static uint8_t patterns4x4[17][4] = {
     { 0b11111111, 0b11111111, 0b11111111, 0b01110111 },
     { 0b11111111, 0b11111111, 0b11111111, 0b11111111 }
 };
+
+static inline int mode7_min(const int a, const int b)
+{
+    return a < b ? a : b;
+}
+
+static inline int mode7_max(const int a, const int b)
+{
+    return a > b ? a : b;
+}
 
 static PDMode7_WorldConfiguration defaultWorldConfiguration(void);
 static PDMode7_Camera* newCamera(void);
@@ -294,8 +302,9 @@ static void gridRemoveSprite(_PDMode7_Grid *grid, PDMode7_Sprite *pSprite);
 static void gridUpdateSprite(_PDMode7_Grid *grid, PDMode7_Sprite *pSprite);
 static _PDMode7_Array* gridGetSpritesAtPoint(_PDMode7_Grid *grid, PDMode7_Vec3 point, int distanceUnits);
 static void bitmapLayerSetBitmap(PDMode7_BitmapLayer *layer, PDMode7_Bitmap *bitmap);
-static void bitmapLayerStateDidChange(PDMode7_BitmapLayer *pLayer);
+static void bitmapLayerDidChange(PDMode7_BitmapLayer *pLayer);
 static void bitmapLayerDraw(PDMode7_BitmapLayer *pLayer);
+static void _removeBitmapLayer(PDMode7_BitmapLayer *layer, int restore);
 static void removeBitmapLayer(PDMode7_BitmapLayer *layer);
 static _PDMode7_GCRef* GC_retain(LuaUDObject *luaRef);
 static void GC_release(LuaUDObject *luaRef);
@@ -416,7 +425,7 @@ static _PDMode7_Parameters worldGetParameters(PDMode7_Display *pDisplay)
     {
         horizon = roundf((1 + (forwardVec.z / (upVec.z * tanHalfFov.y))) * (float)display->rect.height / 2);
     }
-    horizon = fmaxf(0, fminf(horizon, display->rect.height));
+    horizon = mode7_max(0, mode7_min(horizon, display->rect.height));
     
     int planeHeight = display->rect.height - horizon;
     
@@ -2512,8 +2521,8 @@ static void rectAdjust(PDMode7_Rect rect, int width, int height, PDMode7_Rect *a
         y1 = 0;
         *offsetY = -rect.y;
     }
-    x2 = MODE7_MIN(x1 - *offsetX + rect.width, width);
-    y2 = MODE7_MIN(y1 - *offsetY + rect.height, height);
+    x2 = mode7_min(x1 - *offsetX + rect.width, width);
+    y2 = mode7_min(y1 - *offsetY + rect.height, height);
     *adjustedRect = newRect(x1, y1, x2 - x1, y2 - y1);
 }
 
@@ -3080,6 +3089,7 @@ static PDMode7_Bitmap* loadPGM(const char *filename)
     _bitmap->mask = NULL;
     _bitmap->layers = newArray();
     _bitmap->luaRef = NULL;
+    _bitmap->released = 0;
     
     playdate->system->realloc(buffer, 0);
     
@@ -3175,7 +3185,7 @@ static void bitmapAddLayer(PDMode7_Bitmap *pBitmap, PDMode7_BitmapLayer *pLayer)
             layer->parentBitmap = pBitmap;
             arrayPush(bitmap->layers, pLayer);
             
-            bitmapLayerStateDidChange(pLayer);
+            bitmapLayerDidChange(pLayer);
             bitmapLayerDraw(pLayer);
         }
     }
@@ -3183,8 +3193,8 @@ static void bitmapAddLayer(PDMode7_Bitmap *pBitmap, PDMode7_BitmapLayer *pLayer)
 
 static _PDMode7_Array* _bitmapGetLayers(PDMode7_Bitmap *pBitmap)
 {
-    _PDMode7_World *world = pBitmap->prv;
-    return world->sprites;
+    _PDMode7_Bitmap *bitmap = pBitmap->prv;
+    return bitmap->layers;
 }
 
 static PDMode7_BitmapLayer** bitmapGetLayers(PDMode7_Bitmap *pBitmap, int *len)
@@ -3194,6 +3204,16 @@ static PDMode7_BitmapLayer** bitmapGetLayers(PDMode7_Bitmap *pBitmap, int *len)
     return (PDMode7_BitmapLayer**)layers->items;
 }
 
+static void bitmapRemoveAllLayers(PDMode7_Bitmap *pBitmap)
+{
+    _PDMode7_Bitmap *bitmap = pBitmap->prv;
+    for(int i = bitmap->layers->length - 1; i >= 0; i--)
+    {
+        PDMode7_BitmapLayer *layer = bitmap->layers->items[i];
+        removeBitmapLayer(layer);
+    }
+}
+
 static void freeBitmap(PDMode7_Bitmap *pBitmap)
 {
     _PDMode7_Bitmap *bitmap = pBitmap->prv;
@@ -3201,7 +3221,7 @@ static void freeBitmap(PDMode7_Bitmap *pBitmap)
     for(int i = bitmap->layers->length - 1; i >= 0; i--)
     {
         PDMode7_BitmapLayer *layer = bitmap->layers->items[i];
-        removeBitmapLayer(layer);
+        _removeBitmapLayer(layer, 0);
     }
     
     freeArray(bitmap->layers);
@@ -3381,7 +3401,7 @@ static void bitmapLayerSetBitmap(PDMode7_BitmapLayer *layer, PDMode7_Bitmap *bit
     _layer->canRestore = 0;
     _layer->enabled = 0;
     
-    bitmapLayerStateDidChange(layer);
+    bitmapLayerDidChange(layer);
     bitmapLayerDraw(layer);
 }
 
@@ -3401,7 +3421,7 @@ static void bitmapLayerSetPosition(PDMode7_BitmapLayer *pLayer, int x, int y)
     layer->rect.x = x;
     layer->rect.y = y;
     
-    bitmapLayerStateDidChange(pLayer);
+    bitmapLayerDidChange(pLayer);
     bitmapLayerDraw(pLayer);
 }
 
@@ -3413,7 +3433,7 @@ static void bitmapLayerSetVisible(PDMode7_BitmapLayer *pLayer, int visible)
     
     layer->visible = visible;
     
-    bitmapLayerStateDidChange(pLayer);
+    bitmapLayerDidChange(pLayer);
     bitmapLayerDraw(pLayer);
 }
 
@@ -3425,7 +3445,7 @@ static int bitmapLayerIsVisible(PDMode7_BitmapLayer *layer)
 static void bitmapLayerInvalidate(PDMode7_BitmapLayer *pLayer)
 {
     bitmapLayerRestore(pLayer);
-    bitmapLayerStateDidChange(pLayer);
+    bitmapLayerDidChange(pLayer);
     bitmapLayerDraw(pLayer);
 }
 
@@ -3433,7 +3453,7 @@ static int bitmapLayerIntersect(PDMode7_BitmapLayer *layer)
 {
     _PDMode7_BitmapLayer *_layer = layer->prv;
     
-    if(_layer->parentBitmap && _layer->visible)
+    if(_layer->parentBitmap)
     {
         _PDMode7_Bitmap *parentBitmap = _layer->parentBitmap->prv;
         
@@ -3455,7 +3475,7 @@ static int bitmapLayerIntersect(PDMode7_BitmapLayer *layer)
     return 0;
 }
 
-static void bitmapLayerStateDidChange(PDMode7_BitmapLayer *layer)
+static void bitmapLayerDidChange(PDMode7_BitmapLayer *layer)
 {
     _PDMode7_BitmapLayer *_layer = layer->prv;
     
@@ -3475,14 +3495,14 @@ static void bitmapLayerStateDidChange(PDMode7_BitmapLayer *layer)
                 if(rectIntersect(_localLayer->rect, _layer->rect) && _localLayer->visible && _layer->visible)
                 {
                     // Local layer intersects with the layer, we disable both
-                    // Local layer is disabled out of the loop
+                    // Layer is disabled out of the loop
                     intersect = 1;
                     
                     bitmapLayerRestore(localLayer);
                     _localLayer->enabled = 0;
                     _localLayer->canRestore = 0;
                 }
-                else if(!_localLayer->enabled)
+                else if(!_localLayer->enabled && _localLayer->visible)
                 {
                     // Check if a disabled layer can be enabled
                     if(!bitmapLayerIntersect(localLayer))
@@ -3507,7 +3527,7 @@ static void bitmapLayerStateDidChange(PDMode7_BitmapLayer *layer)
     }
 }
 
-static void removeBitmapLayer(PDMode7_BitmapLayer *layer)
+static void _removeBitmapLayer(PDMode7_BitmapLayer *layer, int restore)
 {
     _PDMode7_BitmapLayer *_layer = layer->prv;
     
@@ -3517,14 +3537,17 @@ static void removeBitmapLayer(PDMode7_BitmapLayer *layer)
         int index = arrayIndexOf(parentBitmap->layers, layer);
         if(index >= 0)
         {
-            bitmapLayerRestore(layer);
-            
-            arrayRemove(parentBitmap->layers, index);
-            _layer->parentBitmap = NULL;
+            if(restore)
+            {
+                bitmapLayerRestore(layer);
+            }
             
             // Reset state
             _layer->enabled = 0;
             _layer->canRestore = 0;
+            
+            arrayRemove(parentBitmap->layers, index);
+            _layer->parentBitmap = NULL;
             
             if(_layer->luaRef)
             {
@@ -3534,6 +3557,11 @@ static void removeBitmapLayer(PDMode7_BitmapLayer *layer)
             }
         }
     }
+}
+
+static void removeBitmapLayer(PDMode7_BitmapLayer *layer)
+{
+    _removeBitmapLayer(layer, 1);
 }
 
 static void freeBitmapLayer(PDMode7_BitmapLayer *layer)
@@ -3643,12 +3671,7 @@ static int lua_getPlaneBitmap(lua_State *L)
 static int lua_setPlaneBitmap(lua_State *L)
 {
     PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
-    
-    LuaUDObject *bitmapRef;
-    PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(2, lua_kBitmap, &bitmapRef);
-    _PDMode7_Bitmap *_bitmap = bitmap->prv;
-    _bitmap->luaRef = bitmapRef;
-    
+    PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(2, lua_kBitmap, NULL);
     setPlaneBitmap(world, bitmap);
     return 0;
 }
@@ -3664,10 +3687,7 @@ static int lua_worldGetMainDisplay(lua_State *L)
 static int lua_addDisplay(lua_State *L)
 {
     PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
-    LuaUDObject *displayRef;
-    PDMode7_Display *display = playdate->lua->getArgObject(2, lua_kDisplay, &displayRef);
-    _PDMode7_Display *_display = display->prv;
-    _display->luaRef = displayRef;
+    PDMode7_Display *display = playdate->lua->getArgObject(2, lua_kDisplay, NULL);
     int added = addDisplay(world, display);
     playdate->lua->pushBool(added);
     return 1;
@@ -3717,10 +3737,7 @@ static int lua_worldDraw(lua_State *L)
 static int lua_addSprite(lua_State *L)
 {
     PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
-    LuaUDObject *spriteRef;
-    PDMode7_Sprite *sprite = playdate->lua->getArgObject(2, lua_kSprite, &spriteRef);
-    _PDMode7_Sprite *_sprite = sprite->prv;
-    _sprite->luaRef = spriteRef;
+    PDMode7_Sprite *sprite = playdate->lua->getArgObject(2, lua_kSprite, NULL);
     addSprite(world, sprite);
     return 0;
 }
@@ -3843,7 +3860,8 @@ static int lua_newDisplay(lua_State *L)
     int width = playdate->lua->getArgInt(3);
     int height = playdate->lua->getArgInt(4);
     PDMode7_Display *display = newDisplay(x, y, width, height);
-    playdate->lua->pushObject(display, lua_kDisplay, 1);
+    _PDMode7_Display *_display = display->prv;
+    _display->luaRef = playdate->lua->pushObject(display, lua_kDisplay, 1);
     return 1;
 }
 
@@ -4001,7 +4019,8 @@ static const lua_reg lua_display[] = {
 static int lua_newCamera(lua_State *L)
 {
     PDMode7_Camera *camera = newCamera();
-    playdate->lua->pushObject(camera, lua_kCamera, 0);
+    _PDMode7_Camera *_camera = camera->prv;
+    _camera->luaRef = playdate->lua->pushObject(camera, lua_kCamera, 0);
     return 1;
 }
 
@@ -4240,7 +4259,8 @@ static int lua_newSprite(lua_State *L)
     float height = playdate->lua->getArgFloat(2);
     float depth = playdate->lua->getArgFloat(3);
     PDMode7_Sprite *sprite = newSprite(width, height, depth);
-    playdate->lua->pushObject(sprite, lua_kSprite, 0);
+    _PDMode7_Sprite *_sprite = sprite->prv;
+    _sprite->luaRef = playdate->lua->pushObject(sprite, lua_kSprite, 0);
     return 1;
 }
 
@@ -4319,14 +4339,12 @@ static int lua_spriteSetSize(lua_State *L)
 static int lua_spriteSetBitmapTable(lua_State *L)
 {
     PDMode7_Sprite *sprite = playdate->lua->getArgObject(1, lua_kSprite, NULL);
-    LuaUDObject *luaRef;
-    _PDMode7_LuaBitmapTable *luaBitmapTable = playdate->lua->getArgObject(2, lua_kImageTable, &luaRef);
+    _PDMode7_LuaBitmapTable *luaBitmapTable = playdate->lua->getArgObject(2, lua_kImageTable, NULL);
     
     LCDBitmapTable *LCDBitmapTable = NULL;
     if(luaBitmapTable)
     {
         LCDBitmapTable = luaBitmapTable->LCDBitmapTable;
-        luaBitmapTable->luaRef = luaRef;
     }
     
     spriteSetBitmapTable(sprite, LCDBitmapTable, luaBitmapTable);
@@ -4345,14 +4363,12 @@ static int lua_spriteInstanceGetBitmapTable(lua_State *L)
 static int lua_spriteInstanceSetBitmapTable(lua_State *L)
 {
     PDMode7_SpriteInstance *instance = playdate->lua->getArgObject(1, lua_kSpriteInstance, NULL);
-    LuaUDObject *luaRef;
-    _PDMode7_LuaBitmapTable *luaBitmapTable = playdate->lua->getArgObject(2, lua_kImageTable, &luaRef);
+    _PDMode7_LuaBitmapTable *luaBitmapTable = playdate->lua->getArgObject(2, lua_kImageTable, NULL);
 
     LCDBitmapTable *LCDBitmapTable = NULL;
     if(luaBitmapTable)
     {
         LCDBitmapTable = luaBitmapTable->LCDBitmapTable;
-        luaBitmapTable->luaRef = luaRef;
     }
     
     _spriteSetBitmapTable(instance, LCDBitmapTable, luaBitmapTable);
@@ -4826,7 +4842,9 @@ static int lua_loadPGM(lua_State *L)
 {
     const char *filename = playdate->lua->getArgString(1);
     PDMode7_Bitmap *bitmap = loadPGM(filename);
-    playdate->lua->pushObject(bitmap, lua_kBitmap, 0);
+    _PDMode7_Bitmap *_bitmap = bitmap->prv;
+    LuaUDObject *luaRef = playdate->lua->pushObject(bitmap, lua_kBitmap, 0);
+    _bitmap->luaRef = luaRef;
     return 1;
 }
 
@@ -4861,10 +4879,7 @@ static int lua_bitmapGetMask(lua_State *L)
 static int lua_bitmapSetMask(lua_State *L)
 {
     PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(1, lua_kBitmap, NULL);
-    LuaUDObject *maskRef;
-    PDMode7_Bitmap *mask = playdate->lua->getArgObject(2, lua_kBitmap, &maskRef);
-    _PDMode7_Bitmap *_mask = mask->prv;
-    _mask->luaRef = maskRef;
+    PDMode7_Bitmap *mask = playdate->lua->getArgObject(2, lua_kBitmap, NULL);
     bitmapSetMask(bitmap, mask);
     return 0;
 }
@@ -4872,10 +4887,7 @@ static int lua_bitmapSetMask(lua_State *L)
 static int lua_bitmapAddLayer(lua_State *L)
 {
     PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(1, lua_kBitmap, NULL);
-    LuaUDObject *layerRef;
-    PDMode7_BitmapLayer *layer = playdate->lua->getArgObject(2, lua_kBitmapLayer, &layerRef);
-    _PDMode7_BitmapLayer *_layer = layer->prv;
-    _layer->luaRef = layerRef;
+    PDMode7_BitmapLayer *layer = playdate->lua->getArgObject(2, lua_kBitmapLayer, NULL);
     bitmapAddLayer(bitmap, layer);
     return 0;
 }
@@ -4887,6 +4899,13 @@ static int lua_bitmapGetLayers(lua_State *L)
     _PDMode7_LuaArray *luaArray = newLuaArray(layers, kPDMode7LuaItemBitmapLayer, 0);
     playdate->lua->pushObject(luaArray, lua_kArray, 0);
     return 1;
+}
+
+static int lua_bitmapRemoveAllLayers(lua_State *L)
+{
+    PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(1, lua_kBitmap, NULL);
+    bitmapRemoveAllLayers(bitmap);
+    return 0;
 }
 
 static int lua_freeBitmap(lua_State *L)
@@ -4904,6 +4923,7 @@ static const lua_reg lua_bitmap[] = {
     { "setMask", lua_bitmapSetMask },
     { "addLayer", lua_bitmapAddLayer },
     { "getLayers", lua_bitmapGetLayers },
+    { "removeAllLayers", lua_bitmapRemoveAllLayers },
     { "__gc", lua_freeBitmap },
     { NULL, NULL }
 };
@@ -4912,7 +4932,8 @@ static int lua_newBitmapLayer(lua_State *L)
 {
     PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(1, lua_kBitmap, NULL);
     PDMode7_BitmapLayer *layer = newBitmapLayer(bitmap);
-    playdate->lua->pushObject(layer, lua_kBitmapLayer, 0);
+    _PDMode7_BitmapLayer *_layer = layer->prv;
+    _layer->luaRef = playdate->lua->pushObject(layer, lua_kBitmapLayer, 0);
     return 1;
 }
 
@@ -4929,8 +4950,8 @@ static int lua_bitmapLayerGetPosition(lua_State *L)
 static int lua_bitmapLayerSetPosition(lua_State *L)
 {
     PDMode7_BitmapLayer *layer = playdate->lua->getArgObject(1, lua_kBitmapLayer, NULL);
-    int x = playdate->lua->getArgInt(2);
-    int y = playdate->lua->getArgInt(3);
+    int x = playdate->lua->getArgFloat(2);
+    int y = playdate->lua->getArgFloat(3);
     bitmapLayerSetPosition(layer, x, y);
     return 0;
 }
@@ -5230,6 +5251,7 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->bitmap->setMask = bitmapSetMask; // LUACHECK
     mode7->bitmap->addLayer = bitmapAddLayer; // LUACHECK
     mode7->bitmap->getLayers = bitmapGetLayers; // LUACHECK
+    mode7->bitmap->removeAllLayers = bitmapRemoveAllLayers; // LUACHECK
     mode7->bitmap->freeBitmap = freeBitmap; // LUACHECK
     
     mode7->bitmap->layer = playdate->system->realloc(NULL, sizeof(PDMode7_BitmapLayer_API));

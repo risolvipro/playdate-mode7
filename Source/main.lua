@@ -19,7 +19,7 @@ function newWorld()
 
     local bitmap = mode7.bitmap.loadPGM("images/track-0.pgm")
     world:setPlaneBitmap(bitmap)
-
+    
     world:setPlaneFillColor(mode7.color.grayscale.new(60, 255))
 
     local imageTable = mode7.imagetable.new("images/full-car")

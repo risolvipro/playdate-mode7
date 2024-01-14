@@ -126,10 +126,12 @@ static int update(void *userdata)
     
     float angleDelta = 1 * dt;
 
-    if(pressed & kButtonLeft){
+    if(pressed & kButtonLeft)
+    {
         angle -= angleDelta;
     }
-    else if(pressed & kButtonRight){
+    else if(pressed & kButtonRight)
+    {
         angle += angleDelta;
     }
     
