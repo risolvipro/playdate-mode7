@@ -18,6 +18,7 @@
                                             <li data-section-id="display"><a href="#section-display">Display</a></li>
                                             <li data-section-id="background"><a href="#section-background">Background</a></li>
                                             <li data-section-id="bitmap"><a href="#section-bitmap">Bitmap</a></li>
+                                            <li data-section-id="bitmapLayer"><a href="#section-bitmapLayer">Bitmap Layer</a></li>
                                             <li data-section-id="pool"><a href="#section-pool">Pool</a></li>
                                             <li data-section-id="camera"><a href="#section-camera">Camera</a></li>
                                             <li data-section-id="sprite"><a href="#section-sprite">Sprite</a></li>
@@ -30,7 +31,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.1.0</div>
+        <div class="version">1.2.0</div>
     </div>
 </div>        </div>
         <div class="column-page">
@@ -48,6 +49,7 @@
                                             <li data-section-id="display"><a href="#section-display">Display</a></li>
                                             <li data-section-id="background"><a href="#section-background">Background</a></li>
                                             <li data-section-id="bitmap"><a href="#section-bitmap">Bitmap</a></li>
+                                            <li data-section-id="bitmapLayer"><a href="#section-bitmapLayer">Bitmap Layer</a></li>
                                             <li data-section-id="pool"><a href="#section-pool">Pool</a></li>
                                             <li data-section-id="camera"><a href="#section-camera">Camera</a></li>
                                             <li data-section-id="sprite"><a href="#section-sprite">Sprite</a></li>
@@ -60,7 +62,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.1.0</div>
+        <div class="version">1.2.0</div>
     </div>
 </div>                </div>
 
@@ -244,7 +246,7 @@
                             <div id="def-world-displayToPlanePoint" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
-                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:displayToPlanePoint(displayX, displayY, [display]) <span class="definition-return-type">planeX, planeY</span></span><a href="Lua-API.html#def-world-displayToPlanePoint" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:displayToPlanePoint(displayX, displayY, [display]) <span class="definition-return-type">planeX, planeY, planeZ</span></span><a href="Lua-API.html#def-world-displayToPlanePoint" class="definition-permalink" permalink>#</a></div></div>
                                         <div class="definition-header-right">
                                             <a href="javascript:;" class="more-button" data-more="more-world-displayToPlanePoint"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="5 9 12 16 19 9"></polyline>
@@ -252,10 +254,10 @@
                                         </div>
                                     </div>
                                                                             <div class="definition-header-more" id="more-world-displayToPlanePoint">
-                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec2 mode7->world->displayToPlanePoint(PDMode7_World *world, int displayX, int displayY, PDMode7_Display *display);</span><a href="C-API.html#def-world-displayToPlanePoint" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec3 mode7->world->displayToPlanePoint(PDMode7_World *world, int displayX, int displayY, PDMode7_Display *display);</span><a href="C-API.html#def-world-displayToPlanePoint" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Converts a display point to a plane point.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Converts a display point to a plane point. The z component of the returned value is 0 if the display point is on the plane, -1 if the display point is not on the plane.</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -402,7 +404,7 @@ widthOnDisplay = spriteWidth * multiplierX</pre></div>
                                             <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Sprite** mode7->world->getSprites(PDMode7_World *world, int *length);</span><a href="C-API.html#def-world-getSprites" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Returns a mode7.array (not a Lua array) of all sprites added to world.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Returns a mode7.array (not a Lua array) of all sprites added to the world.</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -949,7 +951,7 @@ mode7.display.kScale4x2</pre></div>
                             <div id="def-background-getCenter" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
-                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.background:getCenter(x, y)</span><a href="Lua-API.html#def-background-getCenter" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.background:getCenter() <span class="definition-return-type">cx, cy</span></span><a href="Lua-API.html#def-background-getCenter" class="definition-permalink" permalink>#</a></div></div>
                                         <div class="definition-header-right">
                                             <a href="javascript:;" class="more-button" data-more="more-background-getCenter"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="5 9 12 16 19 9"></polyline>
@@ -1004,6 +1006,266 @@ mode7.display.kScale4x2</pre></div>
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Gets the bitmap size.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmap-colorAt" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap:colorAt() <span class="definition-return-type">mode7.color</span></span><a href="Lua-API.html#def-bitmap-colorAt" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmap-colorAt"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmap-colorAt">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Color mode7->bitmap->colorAt(PDMode7_Bitmap *bitmap, int x, int y);</span><a href="C-API.html#def-bitmap-colorAt" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the color value at the given position.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmap-setMask" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap:setMask(mask)</span><a href="Lua-API.html#def-bitmap-setMask" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmap-setMask"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmap-setMask">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->setMask(PDMode7_Bitmap *bitmap, PDMode7_Bitmap *mask);</span><a href="C-API.html#def-bitmap-setMask" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets a mask for the bitmap (transparent pixels are black). The mask size must be equal to the bitmap size.</p><p>You can create a mask with ImageMagick:</p><pre class="quote inline">magick input.png -alpha extract mask.pgm</pre></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>Mask is not supported for the plane bitmap.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmap-getMask" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap:getMask() <span class="definition-return-type">mode7.bitmap</span></span><a href="Lua-API.html#def-bitmap-getMask" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmap-getMask"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmap-getMask">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Bitmap* mode7->bitmap->getMask(PDMode7_Bitmap *bitmap);</span><a href="C-API.html#def-bitmap-getMask" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the bitmap mask.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmap-addLayer" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap:addLayer(layer)</span><a href="Lua-API.html#def-bitmap-addLayer" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmap-addLayer"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmap-addLayer">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->addLayer(PDMode7_Bitmap *bitmap, PDMode7_BitmapLayer *layer);</span><a href="C-API.html#def-bitmap-addLayer" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Adds a layer to the bitmap.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmap-getLayers" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap:getLayers() <span class="definition-return-type">mode7.array of mode7.bitmap.layer</span></span><a href="Lua-API.html#def-bitmap-getLayers" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmap-getLayers"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmap-getLayers">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_BitmapLayer** mode7->bitmap->getLayers(PDMode7_Bitmap *bitmap, int *length);</span><a href="C-API.html#def-bitmap-getLayers" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Returns a mode7.array (not a Lua array) of all layers added to the bitmap.</p></div>
+                                                                    </div>
+                            </div>
+                                            </div>
+                </section>
+                                                <section>
+                    <h2 id="section-bitmapLayer">🖼️ Bitmap Layer</h2>
+                    <div class="section-description"><p>A layer for drawing on top of a bitmap.</p><p>Please note that layers can't overlap each other. Also, a bitmap doesn't support hierarchical layers.</p></div>
+                    <div class="definitions">
+                                                    
+                            <div id="def-bitmapLayer-newLayer" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer.new(bitmap)</span><a href="Lua-API.html#def-bitmapLayer-newLayer" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-newLayer"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-newLayer">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_BitmapLayer* mode7->bitmap->layer->newLayer(PDMode7_Bitmap *bitmap);</span><a href="C-API.html#def-bitmapLayer-newLayer" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Creates a new layer with the given bitmap.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-setBitmap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:setBitmap(bitmap)</span><a href="Lua-API.html#def-bitmapLayer-setBitmap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-setBitmap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-setBitmap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->layer->setBitmap(PDMode7_BitmapLayer *layer, PDMode7_Bitmap *bitmap);</span><a href="C-API.html#def-bitmapLayer-setBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets a bitmap for the layer.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>Consider setting a bitmap with the same size as the current bitmap to reduce memory allocations.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-getBitmap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:getBitmap()</span><a href="Lua-API.html#def-bitmapLayer-getBitmap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-getBitmap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-getBitmap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Bitmap* mode7->bitmap->layer->getBitmap(PDMode7_BitmapLayer *layer);</span><a href="C-API.html#def-bitmapLayer-getBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the bitmap of the layer.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-setPosition" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:setPosition(x, y)</span><a href="Lua-API.html#def-bitmapLayer-setPosition" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-setPosition"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-setPosition">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->layer->setPosition(PDMode7_BitmapLayer *layer);</span><a href="C-API.html#def-bitmapLayer-setPosition" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets the left-top position of the layer.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-getPosition" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:getPosition() <span class="definition-return-type">x, y</span></span><a href="Lua-API.html#def-bitmapLayer-getPosition" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-getPosition"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-getPosition">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->layer->getPosition(PDMode7_BitmapLayer *layer, int *x, int *y);</span><a href="C-API.html#def-bitmapLayer-getPosition" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the layer position.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-setVisible" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:setVisible(visible)</span><a href="Lua-API.html#def-bitmapLayer-setVisible" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-setVisible"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-setVisible">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->layer->setVisible(PDMode7_BitmapLayer *layer, int flag);</span><a href="C-API.html#def-bitmapLayer-setVisible" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets the layer visibility.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-isVisible" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:isVisible()</span><a href="Lua-API.html#def-bitmapLayer-isVisible" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-isVisible"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-isVisible">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">int mode7->bitmap->layer->isVisible(PDMode7_BitmapLayer *layer);</span><a href="C-API.html#def-bitmapLayer-isVisible" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the layer visibility.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-invalidate" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:invalidate()</span><a href="Lua-API.html#def-bitmapLayer-invalidate" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-invalidate"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-invalidate">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->layer->invalidate(PDMode7_BitmapLayer *layer);</span><a href="C-API.html#def-bitmapLayer-invalidate" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Invalidates the layer forcing a redraw. This function is needed only for special cases, such as setting a new mask for the bitmap.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-bitmapLayer-removeFromBitmap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap.layer:removeFromBitmap()</span><a href="Lua-API.html#def-bitmapLayer-removeFromBitmap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmapLayer-removeFromBitmap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmapLayer-removeFromBitmap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->bitmap->layer->removeFromBitmap(PDMode7_BitmapLayer *layer);</span><a href="C-API.html#def-bitmapLayer-removeFromBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Removes the layer from the bitmap.</p></div>
                                                                     </div>
                             </div>
                                             </div>
@@ -1309,7 +1571,7 @@ mode7.display.kScale4x2</pre></div>
                                             <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_SpriteInstance* mode7->sprite->getInstance(PDMode7_Sprite *sprite, PDMode7_Display *display);</span><a href="C-API.html#def-sprite-getInstance" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the sprite instance for the given sprite and display.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the sprite instance for the given display.</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -1352,7 +1614,7 @@ mode7.display.kScale4x2</pre></div>
                             <div id="def-sprite-setSize" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
-                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:setSize(size)</span><a href="Lua-API.html#def-sprite-setSize" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:setSize(width, height, depth)</span><a href="Lua-API.html#def-sprite-setSize" class="definition-permalink" permalink>#</a></div></div>
                                         <div class="definition-header-right">
                                             <a href="javascript:;" class="more-button" data-more="more-sprite-setSize"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="5 9 12 16 19 9"></polyline>
@@ -1738,7 +2000,7 @@ mode7.display.kScale4x2</pre></div>
                                             <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_SpriteInstance* mode7->sprite->getInstance(PDMode7_Sprite *sprite, PDMode7_Display *display);</span><a href="C-API.html#def-sprite-getInstance2" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the sprite instance for the given sprite and display.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the sprite instance for the given display.</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -2362,7 +2624,7 @@ mode7.sprite.datasource.kScale</pre></div>
         </div>
     </div>
     <script type="text/javascript">
-                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"blender","title":"Blender"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
+                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"bitmapLayer","title":"Bitmap Layer"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"blender","title":"Blender"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
 
         class Application {
             constructor() {
