@@ -375,7 +375,7 @@ function mode7.bitmap.loadPGM(path) return {} end
 ---@return integer height
 function mode7.bitmap:getSize() return 0, 0 end
 
---- Sets a mask for the bitmap (transparent pixels are black).
+--- Sets a mask for the bitmap (transparent pixels are black). The mask size must be equal to the bitmap size.
 --- You can create a mask with ImageMagick:
 --- magick input.png -alpha extract mask.pgm
 ---
@@ -400,6 +400,11 @@ function mode7.bitmap:addLayer(layer) end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-getLayers
 ---@return mode7.array
 function mode7.bitmap:getLayers() return {} end
+
+--- Removes all the layers from the bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-removeAllLayers
+function mode7.bitmap:removeAllLayers() end
 
 --- Creates a new layer with the given bitmap.
 ---
