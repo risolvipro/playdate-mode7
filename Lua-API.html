@@ -25,6 +25,7 @@
                                             <li data-section-id="spriteInstance"><a href="#section-spriteInstance">Sprite Instance</a></li>
                                             <li data-section-id="spriteDataSource"><a href="#section-spriteDataSource">Sprite Data Source</a></li>
                                             <li data-section-id="primitives"><a href="#section-primitives">Primitives</a></li>
+                                            <li data-section-id="performance-tips"><a href="#section-performance-tips">Performance tips</a></li>
                                             <li data-section-id="blender"><a href="#section-blender">Blender</a></li>
                                             <li class="last" data-section-id="lua-autocomplete"><a href="#section-lua-autocomplete">Lua autocomplete</a></li>
                     </ul>
@@ -56,6 +57,7 @@
                                             <li data-section-id="spriteInstance"><a href="#section-spriteInstance">Sprite Instance</a></li>
                                             <li data-section-id="spriteDataSource"><a href="#section-spriteDataSource">Sprite Data Source</a></li>
                                             <li data-section-id="primitives"><a href="#section-primitives">Primitives</a></li>
+                                            <li data-section-id="performance-tips"><a href="#section-performance-tips">Performance tips</a></li>
                                             <li data-section-id="blender"><a href="#section-blender">Blender</a></li>
                                             <li class="last" data-section-id="lua-autocomplete"><a href="#section-lua-autocomplete">Lua autocomplete</a></li>
                     </ul>
@@ -2738,6 +2740,12 @@ mode7.sprite.datasource.kScale</pre></div>
                                             </div>
                 </section>
                                                 <section>
+                    <h2 id="section-performance-tips">🏎️ Performance tips</h2>
+                    <div class="section-description"><p>Here are some tips to improve the performance of your game:</p><ul><li><p>Set an appropriate display scale (1x1 is the slowest, while 4x2 is the fastest).</p></li><li><p>Reduce the bitmap resolution to minimize cache misses.</p></li><li><p>Change the display scale or bitmap dynamically. When the camera is far from the plane, consider adjusting the display scale or swapping out the plane bitmap with a lower resolution version.</p></li></ul></div>
+                    <div class="definitions">
+                                            </div>
+                </section>
+                                                <section>
                     <h2 id="section-blender">⚙️ Blender</h2>
                     <div class="section-description"><p>You can use Blender to automatically generate a sprite image table. A Blender project is included in the <i>blender</i> folder of the library.</p><p>On macOS you need to launch Blender from the command line:</p><pre class="quote">cd /Applications/Blender.app/Contents/MacOS
 ./Blender</pre><ul><li><p>Install Blender 4.0+</p></li><li><p>Install <i>ImageMagick</i></p></li><li><p>Open the project in Blender and switch to the <i>Scripting</i> tab</p></li><li><p>Run the script</p></li><li><p>The image table will be saved in <i>blender/output</i></p></li></ul></div>
@@ -2754,7 +2762,7 @@ mode7.sprite.datasource.kScale</pre></div>
         </div>
     </div>
     <script type="text/javascript">
-                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"bitmapLayer","title":"Bitmap Layer"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"blender","title":"Blender"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
+                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"bitmapLayer","title":"Bitmap Layer"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"performance-tips","title":"Performance tips"},{"id":"blender","title":"Blender"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
 
         class Application {
             constructor() {
