@@ -1,3 +1,5 @@
+mode7 = {}
+
 ---@class mode7.world
 mode7.world = {}
 
@@ -39,6 +41,8 @@ mode7.camera = {}
 ---@field kAlignmentNone integer 0
 ---@field kAlignmentEven integer 1
 ---@field kAlignmentOdd integer 2
+---@field kBillboardSizeAutomatic integer 0
+---@field kBillboardSizeCustom integer 1
 mode7.sprite = {}
 
 ---@class mode7.sprite.datasource
@@ -562,7 +566,7 @@ function mode7.sprite.new(width, height, depth) return {} end
 --- Gets the sprite instance for the given display.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-getInstance
----@param display mode7.display?
+---@param display mode7.display
 ---@return mode7.sprite.instance
 function mode7.sprite:getInstance(display) return {} end
 
@@ -625,7 +629,7 @@ function mode7.sprite:getPitch() return 0 end
 --- Sets the sprite frame index (all instances).
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-setFrame
----@param frame number
+---@param frame integer
 function mode7.sprite:setFrame(frame) end
 
 --- Sets the sprite visibility for all the instances.
@@ -660,6 +664,19 @@ function mode7.sprite:setAlignment(alignmentX, alignmentY) end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-setBimapTable
 ---@param imageTable mode7.imagetable?
 function mode7.sprite:setImageTable(imageTable) end
+
+--- Sets the billboard size behavior for all the instances.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-setBillboardSizeBehavior
+---@param behavior integer
+function mode7.sprite:setBillboardSizeBehavior(behavior) end
+
+--- Sets the billboard size for all the instances.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-setBillboardSize
+---@param width number
+---@param height number
+function mode7.sprite:setBillboardSize(width, height) end
 
 --- Sets a custom draw function for all the instances.
 ---
@@ -734,7 +751,7 @@ function mode7.sprite.instance:isVisible() return false end
 --- Animation length must be set in the data source by calling sprite.instance.datasource:setLengthForKey with the mode7.sprite.datasource.kFrame key.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setFrame
----@param frame number
+---@param frame integer
 function mode7.sprite.instance:setFrame(frame) end
 
 --- Gets the sprite frame index for the instance.
@@ -750,7 +767,7 @@ function mode7.sprite.instance:getFrame() return 0 end
 ---@param cy number
 function mode7.sprite.instance:setImageCenter(cx, cy) end
 
---- Gets the sprite center for the instance.
+--- Gets the image center for the instance.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-getImageCenter
 ---@return number cx
@@ -803,6 +820,36 @@ function mode7.sprite.instance:getImageTable() return {} end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setDrawFunction
 ---@param name string
 function mode7.sprite.instance:setDrawFunctionName(name) end
+
+--- Sets the behavior for determining the billboard size.
+--- * When the behavior is set to automatic, the billboard width is determined by the longer side of the sprite.
+--- * When the behavior is set to custom, the billboard width is determined by the custom width.
+--- 
+--- Typically, only the billboard width is used to calculate the sprite rect on screen. The billboard height serves as a fallback value when the image is unavailable.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setBillboardSizeBehavior
+---@param behavior integer
+function mode7.sprite.instance:setBillboardSizeBehavior(behavior) end
+
+--- Sets a custom size for the billboard. The size is expressed in the world coordinate system. In order to use this property, set the behavior to custom.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setBillboardSize
+---@param width number
+---@param height number
+function mode7.sprite.instance:setBillboardSize(width, height) end
+
+--- Gets the billboard size behavior.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-getBillboardSizeBehavior
+---@return integer
+function mode7.sprite.instance:getBillboardSizeBehavior() return 0 end
+
+--- Gets the billboard custom size.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-getBillboardSize
+---@return number width
+---@return number height
+function mode7.sprite.instance:getBillboardSize() return 0, 0 end
 
 --- It returns the visible image for the instance.
 ---
@@ -878,9 +925,7 @@ function mode7.sprite.instance.datasource:setLengthForKey(width, key) end
 --- A sprite is: rotated clockwise starting from the frontal position (for a character sprite, angle-1 will show the character's face), rotated in the positive pitch direction (for a character sprite, the head will move towards you), scaled from maximum to minimum width.
 --- Notes:
 --- * An image is never repeated twice in the table.
---- 
 --- * Keys with a length of 1 are considered optional. For example, you can have a sprite with a single frame, angle, pitch but multiple scales.
---- 
 --- * Layout is not valid if you use the same key twice.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteDataSource-setLayout

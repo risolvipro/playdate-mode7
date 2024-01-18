@@ -24,8 +24,8 @@ function newWorld()
 
     local imageTable = mode7.imagetable.new("images/full-car")
 
-    addCar(world, imageTable, 246, 1106, 2)
-    addCar(world, imageTable, 195, 1134, 2)
+    addCar(world, imageTable, 246, 1106, 1.5)
+    addCar(world, imageTable, 195, 1134, 1.5)
 
     local display = world:getMainDisplay()
     local camera = display:getCamera()
@@ -59,10 +59,10 @@ function newWorld()
 end
 
 function addCar(world, imageTable, x, y, z)
-    local car = mode7.sprite.new(10, 10, 4)
+    local car = mode7.sprite.new(10, 10, 3)
     car:setPosition(x, y, z)
     car:setImageTable(imageTable)
-    car:setImageCenter(0.5, 0.2)
+    car:setImageCenter(0.5, 0.3)
     car:setAngle(math.rad(-90))
     car:setAlignment(mode7.sprite.kAlignmentOdd, mode7.sprite.kAlignmentOdd)
 

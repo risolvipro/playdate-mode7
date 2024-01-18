@@ -96,6 +96,9 @@ mode7.sprite.kAlignmentNone = 0
 mode7.sprite.kAlignmentEven = 1
 mode7.sprite.kAlignmentOdd = 2
 
+mode7.sprite.kBillboardSizeAutomatic = 0
+mode7.sprite.kBillboardSizeCustom = 1
+
 -- Bitmap
 
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-colorAt

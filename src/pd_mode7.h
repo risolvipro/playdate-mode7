@@ -61,6 +61,11 @@ typedef enum {
     kMode7SpriteAlignmentOdd
 } PDMode7_SpriteAlignment;
 
+typedef enum {
+    kMode7BillboardSizeAutomatic,
+    kMode7BillboardSizeCustom
+} PDMode7_SpriteBillboardSizeBehavior;
+
 typedef struct PDMode7_Bitmap {
     void *prv;
 } PDMode7_Bitmap;
@@ -205,6 +210,8 @@ typedef struct PDMode7_Sprite_API {
     void(*setDrawFunction)(PDMode7_Sprite *sprite, PDMode7_SpriteDrawCallbackFunction *function);
     void(*setBitmapTable)(PDMode7_Sprite *sprite, LCDBitmapTable *bitmapTable);
     void(*setFrame)(PDMode7_Sprite *sprite, unsigned int frame);
+    void(*setBillboardSizeBehavior)(PDMode7_Sprite *sprite, PDMode7_SpriteBillboardSizeBehavior behavior);
+    void(*setBillboardSize)(PDMode7_Sprite *sprite, float width, float height);
     void(*setUserData)(PDMode7_Sprite *sprite, void *userdata);
     void(*removeFromWorld)(PDMode7_Sprite *sprite);
     PDMode7_World*(*getWorld)(PDMode7_Sprite *sprite);
@@ -239,6 +246,10 @@ typedef struct PDMode7_SpriteInstance_API {
     void(*setDrawFunction)(PDMode7_SpriteInstance *instance, PDMode7_SpriteDrawCallbackFunction *callback);
     unsigned int(*getFrame)(PDMode7_SpriteInstance *instance);
     void(*setFrame)(PDMode7_SpriteInstance *instance, unsigned int frame);
+    PDMode7_SpriteBillboardSizeBehavior(*getBillboardSizeBehavior)(PDMode7_SpriteInstance *instance);
+    void(*setBillboardSizeBehavior)(PDMode7_SpriteInstance *instance, PDMode7_SpriteBillboardSizeBehavior behavior);
+    PDMode7_Vec2(*getBillboardSize)(PDMode7_SpriteInstance *instance);
+    void(*setBillboardSize)(PDMode7_SpriteInstance *instance, float width, float height);
     LCDBitmap*(*getBitmap)(PDMode7_SpriteInstance *instance);
     PDMode7_Rect(*getDisplayRect)(PDMode7_SpriteInstance *instance);
     int(*isVisibleOnDisplay)(PDMode7_SpriteInstance *instance);

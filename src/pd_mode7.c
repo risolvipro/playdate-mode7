@@ -99,6 +99,8 @@ typedef struct {
     PDMode7_Rect displayRect;
     float depth;
     unsigned int frame;
+    PDMode7_Vec2 billboardSize;
+    PDMode7_SpriteBillboardSizeBehavior billboardSizeBehavior;
     PDMode7_SpriteDataSource *dataSource;
     LCDBitmapTable *bitmapTable;
     _PDMode7_LuaBitmapTable *luaBitmapTable;
@@ -493,8 +495,16 @@ static void worldUpdateDisplay(PDMode7_World *pWorld, PDMode7_Display *pDisplay)
                 
                 PDMode7_Vec3 multiplier = displayMultiplierForScanlineAt(pDisplay, sprite->position, &parameters);
                 
-                int preferredWidth = roundf(multiplier.x * sprite->size.x);
-                int preferredHeight = roundf(multiplier.y * sprite->size.z);
+                float spriteWidth = fmaxf(sprite->size.x, sprite->size.y);
+                float spriteHeight = sprite->size.z;
+                if(instance->billboardSizeBehavior == kMode7BillboardSizeCustom)
+                {
+                    spriteWidth = instance->billboardSize.x;
+                    spriteHeight = instance->billboardSize.y;
+                }
+                
+                int preferredWidth = roundf(multiplier.x * spriteWidth);
+                int preferredHeight = roundf(multiplier.y * spriteHeight);
                 
                 int hasMaximumWidth = (dataSource->maximumWidth > 0);
 
@@ -1919,6 +1929,8 @@ static PDMode7_Sprite* newSprite(float width, float height, float depth)
         _instance->alignmentY = kMode7SpriteAlignmentNone;
         _instance->depth = 0;
         _instance->frame = 0;
+        _instance->billboardSizeBehavior = kMode7BillboardSizeAutomatic;
+        _instance->billboardSize = newVec2(0, 0);
         _instance->bitmapTable = NULL;
         _instance->luaBitmapTable = NULL;
         _instance->bitmap = NULL;
@@ -2080,6 +2092,47 @@ static unsigned int _spriteGetFrame(PDMode7_SpriteInstance *pInstance)
     return instance->frame;
 }
 
+static void _spriteSetBillboardSizeBehavior(PDMode7_SpriteInstance *pInstance, PDMode7_SpriteBillboardSizeBehavior behavior)
+{
+    _PDMode7_SpriteInstance *instance = pInstance->prv;
+    instance->billboardSizeBehavior = behavior;
+}
+
+static void spriteSetBillboardSizeBehavior(PDMode7_Sprite *pSprite, PDMode7_SpriteBillboardSizeBehavior behavior)
+{
+    for(int i = 0; i < MODE7_MAX_DISPLAYS; i++)
+    {
+        _spriteSetBillboardSizeBehavior(((_PDMode7_Sprite*)pSprite->prv)->instances[i], behavior);
+    }
+}
+
+static PDMode7_SpriteBillboardSizeBehavior _spriteGetBillboardSizeBehavior(PDMode7_SpriteInstance *pInstance)
+{
+    _PDMode7_SpriteInstance *instance = pInstance->prv;
+    return instance->billboardSizeBehavior;
+}
+
+static void _spriteSetBillboardSize(PDMode7_SpriteInstance *pInstance, float width, float height)
+{
+    _PDMode7_SpriteInstance *instance = pInstance->prv;
+    instance->billboardSize.x = width;
+    instance->billboardSize.y = height;
+}
+
+static void spriteSetBillboardSize(PDMode7_Sprite *pSprite, float width, float height)
+{
+    for(int i = 0; i < MODE7_MAX_DISPLAYS; i++)
+    {
+        _spriteSetBillboardSize(((_PDMode7_Sprite*)pSprite->prv)->instances[i], width, height);
+    }
+}
+
+static PDMode7_Vec2 _spriteGetBillboardSize(PDMode7_SpriteInstance *pInstance)
+{
+    _PDMode7_SpriteInstance *instance = pInstance->prv;
+    return instance->billboardSize;
+}
+
 static void _spriteSetRoundingIncrement(PDMode7_SpriteInstance *pInstance, unsigned int x, unsigned int y)
 {
     _PDMode7_SpriteInstance *instance = pInstance->prv;
@@ -2193,22 +2246,27 @@ static _PDMode7_LuaBitmapTable* _spriteGetLuaBitmapTable(PDMode7_SpriteInstance 
 static PDMode7_SpriteInstance* spriteGetInstance(PDMode7_Sprite *pSprite, PDMode7_Display *pDisplay)
 {
     _PDMode7_Sprite *sprite = pSprite->prv;
-    
-    if(!sprite->world)
+    PDMode7_World *targetWorld = sprite->world;
+
+    if(!targetWorld)
     {
-        return NULL;
+        // Retrieve world from display
+        _PDMode7_Display *display = pDisplay->prv;
+        targetWorld = display->world;
     }
     
-    PDMode7_World *pWorld = sprite->world;
-    pDisplay = getDisplay(pWorld, pDisplay);
-    
-    int displayIndex = indexForDisplay(pWorld, pDisplay);
-    if(displayIndex < 0)
+    if(targetWorld)
     {
-        return NULL;
+        pDisplay = getDisplay(targetWorld, pDisplay);
+        
+        int displayIndex = indexForDisplay(targetWorld, pDisplay);
+        if(displayIndex >= 0)
+        {
+            return sprite->instances[displayIndex];
+        }
     }
     
-    return sprite->instances[displayIndex];
+    return NULL;
 }
 
 static PDMode7_SpriteInstance** spriteGetInstances(PDMode7_Sprite *pSprite, int *length)
@@ -4451,6 +4509,57 @@ static int lua_spriteInstanceSetFrame(lua_State *L)
     return 0;
 }
 
+static int lua_spriteSetBillboardSizeBehavior(lua_State *L)
+{
+    PDMode7_Sprite *sprite = playdate->lua->getArgObject(1, lua_kSprite, NULL);
+    PDMode7_SpriteBillboardSizeBehavior behavior = playdate->lua->getArgInt(2);
+    spriteSetBillboardSizeBehavior(sprite, behavior);
+    return 0;
+}
+
+static int lua_spriteInstanceGetBillboardSizeBehavior(lua_State *L)
+{
+    PDMode7_SpriteInstance *instance = playdate->lua->getArgObject(1, lua_kSpriteInstance, NULL);
+    PDMode7_SpriteBillboardSizeBehavior behavior = _spriteGetBillboardSizeBehavior(instance);
+    playdate->lua->pushInt(behavior);
+    return 1;
+}
+
+static int lua_spriteInstanceSetBillboardSizeBehavior(lua_State *L)
+{
+    PDMode7_SpriteInstance *instance = playdate->lua->getArgObject(1, lua_kSpriteInstance, NULL);
+    PDMode7_SpriteBillboardSizeBehavior behavior = playdate->lua->getArgInt(2);
+    _spriteSetBillboardSizeBehavior(instance, behavior);
+    return 0;
+}
+
+static int lua_spriteSetBillboardSize(lua_State *L)
+{
+    PDMode7_Sprite *sprite = playdate->lua->getArgObject(1, lua_kSprite, NULL);
+    float width = playdate->lua->getArgFloat(2);
+    float height = playdate->lua->getArgFloat(3);
+    spriteSetBillboardSize(sprite, width, height);
+    return 0;
+}
+
+static int lua_spriteInstanceGetBillboardSize(lua_State *L)
+{
+    PDMode7_SpriteInstance *instance = playdate->lua->getArgObject(1, lua_kSpriteInstance, NULL);
+    PDMode7_Vec2 size = _spriteGetBillboardSize(instance);
+    playdate->lua->pushFloat(size.x);
+    playdate->lua->pushFloat(size.y);
+    return 2;
+}
+
+static int lua_spriteInstanceSetBillboardSize(lua_State *L)
+{
+    PDMode7_SpriteInstance *instance = playdate->lua->getArgObject(1, lua_kSpriteInstance, NULL);
+    float width = playdate->lua->getArgFloat(2);
+    float height = playdate->lua->getArgFloat(3);
+    _spriteSetBillboardSize(instance, width, height);
+    return 0;
+}
+
 static int lua_spriteSetRoundingIncrement(lua_State *L)
 {
     PDMode7_Sprite *sprite = playdate->lua->getArgObject(1, lua_kSprite, NULL);
@@ -4745,6 +4854,9 @@ static const lua_reg lua_sprite[] = {
     { "getPitch", lua_spriteGetPitch },
     { "setPitch", lua_spriteSetPitch },
     { "setFrame", lua_spriteSetFrame },
+    { "setBillboardSizeBehavior", lua_spriteSetBillboardSizeBehavior },
+    { "setBillboardSize", lua_spriteSetBillboardSize },
+    { "setFrame", lua_spriteSetFrame },
     { "setVisible", lua_spriteSetVisible },
     { "setImageCenter", lua_spriteSetImageCenter },
     { "setRoundingIncrement", lua_spriteSetRoundingIncrement },
@@ -4812,6 +4924,10 @@ static const lua_reg lua_spriteInstance[] = {
     { "setVisible", lua_spriteInstanceSetVisible },
     { "getFrame", lua_spriteInstanceGetFrame },
     { "setFrame", lua_spriteInstanceSetFrame },
+    { "getBillboardSizeBehavior", lua_spriteInstanceGetBillboardSizeBehavior },
+    { "setBillboardSizeBehavior", lua_spriteInstanceSetBillboardSizeBehavior },
+    { "getBillboardSize", lua_spriteInstanceGetBillboardSize },
+    { "setBillboardSize", lua_spriteInstanceSetBillboardSize },
     { "getImageCenter", lua_spriteInstanceGetImageCenter },
     { "setImageCenter", lua_spriteInstanceSetImageCenter },
     { "getRoundingIncrement", lua_spriteInstanceGetRoundingIncrement },
@@ -4950,8 +5066,8 @@ static int lua_bitmapLayerGetPosition(lua_State *L)
 static int lua_bitmapLayerSetPosition(lua_State *L)
 {
     PDMode7_BitmapLayer *layer = playdate->lua->getArgObject(1, lua_kBitmapLayer, NULL);
-    int x = playdate->lua->getArgFloat(2);
-    int y = playdate->lua->getArgFloat(3);
+    int x = playdate->lua->getArgInt(2);
+    int y = playdate->lua->getArgInt(3);
     bitmapLayerSetPosition(layer, x, y);
     return 0;
 }
@@ -5197,6 +5313,8 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->sprite->getPitch = spriteGetPitch; // LUACHECK
     mode7->sprite->setPitch = spriteSetPitch; // LUACHECK
     mode7->sprite->setFrame = spriteSetFrame; // LUACHECK
+    mode7->sprite->setBillboardSizeBehavior = spriteSetBillboardSizeBehavior; // LUACHECK
+    mode7->sprite->setBillboardSize = spriteSetBillboardSize; // LUACHECK
     mode7->sprite->setBitmapTable = spriteSetBitmapTable_public; // LUACHECK
     mode7->sprite->getInstance = spriteGetInstance; // LUACHECK
     mode7->sprite->setUserData = spriteSetUserData;
@@ -5227,6 +5345,10 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->spriteInstance->setDrawFunction = _spriteSetDrawFunction_c;
     mode7->spriteInstance->getFrame = _spriteGetFrame; // LUACHECK=spriteInstanceGetFrame
     mode7->spriteInstance->setFrame = _spriteSetFrame; // LUACHECK=spriteInstanceSetFrame
+    mode7->spriteInstance->getBillboardSizeBehavior = _spriteGetBillboardSizeBehavior; // LUACHECK=spriteInstanceGetBillboardSizeBehavior
+    mode7->spriteInstance->setBillboardSizeBehavior = _spriteSetBillboardSizeBehavior; // LUACHECK=spriteInstanceSetBillboardSizeBehavior
+    mode7->spriteInstance->getBillboardSize = _spriteGetBillboardSize; // LUACHECK=spriteInstanceGetBillboardSize
+    mode7->spriteInstance->setBillboardSize = _spriteSetBillboardSize; // LUACHECK=spriteInstanceSetBillboardSize
     mode7->spriteInstance->getBitmap = _spriteGetBitmap; // LUACHECK=spriteInstanceGetBitmap
     mode7->spriteInstance->getDisplayRect = _spriteGetDisplayRect; // LUACHECK=spriteInstanceGetDisplayRect
     mode7->spriteInstance->isVisibleOnDisplay = _spriteIsVisibleOnDisplay; // LUACHECK=spriteInstanceIsVisibleOnDisplay

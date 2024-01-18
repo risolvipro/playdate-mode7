@@ -89,11 +89,11 @@ PDMode7_World *newWorld(void)
     mode7->camera->setAngle(camera, -M_PI_2);
     mode7->camera->setClipDistanceUnits(camera, 4);
 
-    sprite = mode7->sprite->newSprite(10, 10, 4);
+    sprite = mode7->sprite->newSprite(10, 10, 3);
     
-    mode7->sprite->setPosition(sprite, 247, 1106, 2);
+    mode7->sprite->setPosition(sprite, 247, 1106, 1.5);
     mode7->sprite->setBitmapTable(sprite, carTable);
-    mode7->sprite->setImageCenter(sprite, 0.5, 0.2);
+    mode7->sprite->setImageCenter(sprite, 0.5, 0.3);
     mode7->sprite->setAngle(sprite, -M_PI_2);
     mode7->sprite->setAlignment(sprite, kMode7SpriteAlignmentOdd, kMode7SpriteAlignmentOdd);
 
