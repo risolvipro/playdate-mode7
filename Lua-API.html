@@ -31,7 +31,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.2.1</div>
+        <div class="version">1.3.0</div>
     </div>
 </div>        </div>
         <div class="column-page">
@@ -62,7 +62,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.2.1</div>
+        <div class="version">1.3.0</div>
     </div>
 </div>                </div>
 
@@ -1578,7 +1578,7 @@ mode7.display.kScale4x2</pre></div>
                             <div id="def-sprite-getInstance" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
-                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:getInstance([display]) <span class="definition-return-type">mode7.sprite.instance</span></span><a href="Lua-API.html#def-sprite-getInstance" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:getInstance(display) <span class="definition-return-type">mode7.sprite.instance</span></span><a href="Lua-API.html#def-sprite-getInstance" class="definition-permalink" permalink>#</a></div></div>
                                         <div class="definition-header-right">
                                             <a href="javascript:;" class="more-button" data-more="more-sprite-getInstance"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="5 9 12 16 19 9"></polyline>
@@ -1848,6 +1848,44 @@ mode7.display.kScale4x2</pre></div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description"><p>Sets the sprite image table for all the instances.</p></div>
                                                                                                                     <div class="definition-block definition-note last"><p>See also <a class="definition-link" href="#def-spriteInstance-setBitmapTable">sprite.instance:setImageTable</a></p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-sprite-setBillboardSizeBehavior" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:setBillboardSizeBehavior(behavior)</span><a href="Lua-API.html#def-sprite-setBillboardSizeBehavior" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-sprite-setBillboardSizeBehavior"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-sprite-setBillboardSizeBehavior">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->sprite->setBillboardSizeBehavior(PDMode7_Sprite *sprite, PDMode7_SpriteBillboardSizeBehavior behavior);</span><a href="C-API.html#def-sprite-setBillboardSizeBehavior" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the billboard size behavior for all the instances.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>See also <a class="definition-link" href="#def-spriteInstance-setBillboardSizeBehavior">sprite.instance:setBillboardSizeBehavior</a></p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-sprite-setBillboardSize" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:setBillboardSize(width, height)</span><a href="Lua-API.html#def-sprite-setBillboardSize" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-sprite-setBillboardSize"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-sprite-setBillboardSize">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->sprite->setBillboardSize(PDMode7_Sprite *sprite, float width, float height);</span><a href="C-API.html#def-sprite-setBillboardSize" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the billboard size for all the instances.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>See also <a class="definition-link" href="#def-spriteInstance-setBillboardSize">sprite.instance:setBillboardSize</a></p></div>
                                                                     </div>
                             </div>
                                                     
@@ -2144,7 +2182,7 @@ mode7.display.kScale4x2</pre></div>
                                             <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec2 mode7->spriteInstance->getImageCenter(PDMode7_SpriteInstance *instance);</span><a href="C-API.html#def-spriteInstance-getImageCenter" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the sprite center for the instance.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the image center for the instance.</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -2280,6 +2318,80 @@ mode7.sprite.kAlignmentOdd</pre></div>
 end
 
 instance:setDrawFunctionName("drawFunction")</pre></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-spriteInstance-setBillboardSizeBehavior" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite.instance:setBillboardSizeBehavior(behavior)</span><a href="Lua-API.html#def-spriteInstance-setBillboardSizeBehavior" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-setBillboardSizeBehavior"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-spriteInstance-setBillboardSizeBehavior">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->spriteInstance->setBillboardSizeBehavior(PDMode7_SpriteInstance *spriteInstance, PDMode7_SpriteBillboardSizeBehavior behavior);</span><a href="C-API.html#def-spriteInstance-setBillboardSizeBehavior" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the behavior for determining the billboard size.</p><ul><li><p>When the behavior is set to <i>automatic</i>, the billboard width is determined by the longer side of the sprite.</p></li><li><p>When the behavior is set to <i>custom</i>, the billboard width is determined by the custom width.</p></li></ul><p>Typically, only the billboard width is used to calculate the sprite rect on screen. The billboard height serves as a fallback value when the image is unavailable.</p></div>
+                                                                                                                    <div class="definition-block definition-code last"><pre class="code inline no-margins">mode7.sprite.kBillboardSizeAutomatic
+mode7.sprite.kBillboardSizeCustom</pre></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-spriteInstance-setBillboardSize" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite.instance:setBillboardSize(width, height)</span><a href="Lua-API.html#def-spriteInstance-setBillboardSize" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-setBillboardSize"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-spriteInstance-setBillboardSize">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->spriteInstance->setBillboardSize(PDMode7_SpriteInstance *spriteInstance, float width, float height);</span><a href="C-API.html#def-spriteInstance-setBillboardSize" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a custom size for the billboard. The size is expressed in the world coordinate system. In order to use this property, set the behavior to <i>custom</i>.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-spriteInstance-getBillboardSizeBehavior" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite.instance:getBillboardSizeBehavior()</span><a href="Lua-API.html#def-spriteInstance-getBillboardSizeBehavior" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-getBillboardSizeBehavior"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-spriteInstance-getBillboardSizeBehavior">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_SpriteBillboardSizeBehavior mode7->spriteInstance->getBillboardSizeBehavior(PDMode7_SpriteInstance *instance);</span><a href="C-API.html#def-spriteInstance-getBillboardSizeBehavior" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the billboard size behavior.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-spriteInstance-getBillboardSize" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite.instance:getBillboardSize()</span><a href="Lua-API.html#def-spriteInstance-getBillboardSize" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-getBillboardSize"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-spriteInstance-getBillboardSize">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Vec2 mode7->spriteInstance->getBillboardSize(PDMode7_SpriteInstance *instance);</span><a href="C-API.html#def-spriteInstance-getBillboardSize" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the billboard custom size.</p></div>
                                                                     </div>
                             </div>
                                                     
