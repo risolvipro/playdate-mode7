@@ -14,7 +14,6 @@
 
 #define MODE7_MAX_DISPLAYS 4
 #define MODE7_SPRITE_DSOURCE_LEN 4
-#define MODE7_ANGLE_E 0.00001f
 
 PDMode7_API *mode7;
 static PlaydateAPI *playdate;
@@ -524,14 +523,20 @@ static void worldUpdateDisplay(PDMode7_World *pWorld, PDMode7_Display *pDisplay)
                         if(angleLength > 1)
                         {
                             float relativeAngle = worldGetRelativeAngle(camera->position, camera->angle, sprite->position, sprite->angle, &parameters);
-                            angleIndex = roundf(relativeAngle / (2 * (float)M_PI) * (angleLength - 1));
+                            angleIndex = roundf(relativeAngle / (2 * (float)M_PI) * angleLength);
+                            if(angleIndex >= angleLength){
+                                angleIndex = 0;
+                            }
                         }
                         
                         unsigned int pitchIndex = 0;
                         if(pitchLength > 1)
                         {
                             float relativeAngle = worldGetRelativePitch(camera->position, camera->pitch, sprite->position, sprite->pitch, &parameters);
-                            pitchIndex = roundf(relativeAngle / (2 * (float)M_PI) * (pitchLength - 1));
+                            pitchIndex = roundf(relativeAngle / (2 * (float)M_PI) * pitchLength);
+                            if(pitchIndex >= pitchLength){
+                                pitchIndex = 0;
+                            }
                         }
                         
                         unsigned int scaleIndex = 0;
@@ -643,7 +648,7 @@ static float worldGetRelativeAngle(PDMode7_Vec3 cameraPoint, float cameraAngle, 
     float rotatedX = dir_cos * dirVec.x - dir_sin * dirVec.y;
     float rotatedY = dir_sin * dirVec.x + dir_cos * dirVec.y;
         
-    float relativeAngle = fmodf(atan2f(rotatedY, rotatedX) * p->fovRatio.x - atan2f(dirVec.y, dirVec.x) + targetAngle + (float)M_PI + MODE7_ANGLE_E, 2 * (float)M_PI);
+    float relativeAngle = fmodf(atan2f(rotatedY, rotatedX) * p->fovRatio.x - atan2f(dirVec.y, dirVec.x) + targetAngle + (float)M_PI, 2 * (float)M_PI);
     if(relativeAngle < 0)
     {
         relativeAngle += 2 * (float)M_PI;
@@ -3401,11 +3406,8 @@ static void bitmapLayerDraw(PDMode7_BitmapLayer *pLayer)
                     uint8_t color = layerBitmap->data[src_offset];
                     uint8_t backgroundColor = parentBitmap->data[dst_offset];
                     
-                    if(layerMask)
-                    {
-                        uint8_t alpha = layerMask->data[src_offset];
-                        color = (alpha * (color - backgroundColor)) / 255 + backgroundColor;
-                    }
+                    uint8_t alpha = layerMask->data[src_offset];
+                    color = (alpha * (color - backgroundColor)) / 255 + backgroundColor;
                     
                     parentBitmap->data[dst_offset] = color;
                 }
