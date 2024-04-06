@@ -27,12 +27,13 @@
                                             <li data-section-id="primitives"><a href="#section-primitives">Primitives</a></li>
                                             <li data-section-id="performance-tips"><a href="#section-performance-tips">Performance tips</a></li>
                                             <li data-section-id="blender"><a href="#section-blender">Blender</a></li>
+                                            <li data-section-id="tools"><a href="#section-tools">Tools</a></li>
                                             <li class="last" data-section-id="lua-autocomplete"><a href="#section-lua-autocomplete">Lua autocomplete</a></li>
                     </ul>
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.3.0</div>
+        <div class="version">1.3.1</div>
     </div>
 </div>        </div>
         <div class="column-page">
@@ -59,12 +60,13 @@
                                             <li data-section-id="primitives"><a href="#section-primitives">Primitives</a></li>
                                             <li data-section-id="performance-tips"><a href="#section-performance-tips">Performance tips</a></li>
                                             <li data-section-id="blender"><a href="#section-blender">Blender</a></li>
+                                            <li data-section-id="tools"><a href="#section-tools">Tools</a></li>
                                             <li class="last" data-section-id="lua-autocomplete"><a href="#section-lua-autocomplete">Lua autocomplete</a></li>
                     </ul>
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.3.0</div>
+        <div class="version">1.3.1</div>
     </div>
 </div>                </div>
 
@@ -1348,7 +1350,7 @@ mode7.display.kScale4x2</pre></div>
                                         </div>
                                     </div>
                                                                             <div class="definition-header-more" id="more-camera-new">
-                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Camera* mode7->sprite->newCamera();</span><a href="C-API.html#def-camera-new" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Camera* mode7->camera->newCamera();</span><a href="C-API.html#def-camera-new" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Creates a new camera.</p></div>
@@ -2047,7 +2049,7 @@ mode7.display.kScale4x2</pre></div>
                             <div id="def-sprite-getInstance2" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
-                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:getInstance([display]) <span class="definition-return-type">mode7.sprite.instance</span></span><a href="Lua-API.html#def-sprite-getInstance2" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:getInstance(display) <span class="definition-return-type">mode7.sprite.instance</span></span><a href="Lua-API.html#def-sprite-getInstance2" class="definition-permalink" permalink>#</a></div></div>
                                         <div class="definition-header-right">
                                             <a href="javascript:;" class="more-button" data-more="more-sprite-getInstance2"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="5 9 12 16 19 9"></polyline>
@@ -2563,7 +2565,7 @@ mode7.sprite.kBillboardSizeCustom</pre></div>
                                             <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->spriteInstance->dataSource->setLengthForKey(PDMode7_SpriteDataSource *dataSource, unsigned int length, PDMode7_SpriteDataSourceKey key);</span><a href="C-API.html#def-spriteDataSource-setLengthForKey" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the length for the given data source key. The default length for each key is 1 (length must be greater than 0).</p><p>Use this function to specify how many times a sprite is scaled and rotated in the image table.</p><p>E.g. For a rotation by 10 degrees, set a length of 36. For a scaling from 100px to 10px, set a length of 11.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the length for the given data source key. The default length for each key is 1 (length must be greater than 0).</p><p>Use this function to specify how many times a sprite is scaled and rotated in the image table.</p><p>E.g. For a rotation by 10 degrees, set a length of 36. For a scaling from 100px to 10px, set a length of 10.</p></div>
                                                                                                                     <div class="definition-block definition-code last"><pre class="code inline no-margins">mode7.sprite.datasource.kFrame
 mode7.sprite.datasource.kAngle
 mode7.sprite.datasource.kPitch
@@ -2585,15 +2587,18 @@ mode7.sprite.datasource.kScale</pre></div>
                                             <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void PDMode7_SpriteDataSource* mode7->spriteInstance->dataSource->setLayout(PDMode7_SpriteDataSource *dataSource, PDMode7_SpriteDataSourceKey k1, PDMode7_SpriteDataSourceKey k2, PDMode7_SpriteDataSourceKey k3, PDMode7_SpriteDataSourceKey k4);</span><a href="C-API.html#def-spriteDataSource-setLayout" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets the layout for the data source. It defines the order of the image table, the default value "frame, angle, pitch, scale" implies the following structure:</p><pre class="quote inline">[frame-1,
-   [angle-1,
-       [pitch-1,
-           [scale-1, scale-2, scale-3, ...]
-       ],
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets the layout for the data source. It defines the order of the image table, the default value "frame, angle, pitch, scale" implies the following structure:</p><pre class="quote inline">begin frame-1
+   begin angle-1
+       begin pitch-1
+           save [scale-1, scale-2, scale-3, ...]
+       end pitch-1
+       begin pitch-2
+           save [scale-1, scale-2, scale-3, ...]
+       end pitch-2
        ...
-   ],
+   end angle-1
    ...
-],
+end frame-1
 ...</pre><p>A sprite is: rotated clockwise starting from the frontal position (for a character sprite, angle-1 will show the character's face), rotated in the positive pitch direction (for a character sprite, the head will move towards you), scaled from maximum to minimum width.</p><p>Notes:</p><ul><li><p>An image is never repeated twice in the table.</p></li><li><p>Keys with a length of 1 are considered optional. For example, you can have a sprite with a single frame, angle, pitch but multiple scales.</p></li><li><p>Layout is not valid if you use the same key twice.</p></li></ul></div>
                                                                     </div>
                             </div>
@@ -2752,6 +2757,12 @@ mode7.sprite.datasource.kScale</pre></div>
                     <div class="definitions">
                                             </div>
                 </section>
+                                                <section>
+                    <h2 id="section-tools">⚙️ Tools</h2>
+                    <div class="section-description"><p>You can find a Python script to resize images (e.g. trees) in the <i>tools/resize</i> folder of the library. <b>ImageMagick</b> is required.</p><p>The resize.py script allows you to specify an image or a folder as input (-i), a maximum width (-max), a minimum width (-min), a step value (-step). Run "resize.py -h" for more info.</p></div>
+                    <div class="definitions">
+                                            </div>
+                </section>
                                                 <section class="last">
                     <h2 id="section-lua-autocomplete">⚙️ Lua autocomplete</h2>
                     <div class="section-description"><p>Copy the <i>lua/stub.lua</i> file into your VSCode workspace to support autocomplete and inline documentation.</p><p>This file contains placeholder code, you should not place it into the <i>Source</i> folder of the game.</p></div>
@@ -2762,7 +2773,7 @@ mode7.sprite.datasource.kScale</pre></div>
         </div>
     </div>
     <script type="text/javascript">
-                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"bitmapLayer","title":"Bitmap Layer"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"performance-tips","title":"Performance tips"},{"id":"blender","title":"Blender"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
+                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"bitmapLayer","title":"Bitmap Layer"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"performance-tips","title":"Performance tips"},{"id":"blender","title":"Blender"},{"id":"tools","title":"Tools"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
 
         class Application {
             constructor() {
