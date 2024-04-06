@@ -4787,7 +4787,7 @@ static int lua_spriteSetDrawFunctionName(lua_State *L)
         _spriteSetDrawCallback(instance, newCallback_lua(functionName));
     }
     
-    return 1;
+    return 0;
 }
 
 static int lua_spriteInstanceSetDrawFunctionName(lua_State *L)
@@ -4795,7 +4795,7 @@ static int lua_spriteInstanceSetDrawFunctionName(lua_State *L)
     PDMode7_SpriteInstance *instance = playdate->lua->getArgObject(1, lua_kSpriteInstance, NULL);
     const char *functionName = playdate->lua->getArgString(2);
     _spriteSetDrawCallback(instance, newCallback_lua(functionName));
-    return 1;
+    return 0;
 }
 
 static int lua_spriteGetWorld(lua_State *L)

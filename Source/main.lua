@@ -23,7 +23,7 @@ function newWorld()
     world:setPlaneFillColor(mode7.color.grayscale.new(60, 255))
 
     local imageTable = mode7.imagetable.new("images/full-car")
-
+    
     addCar(world, imageTable, 246, 1106, 1.5)
     addCar(world, imageTable, 195, 1134, 1.5)
 
@@ -65,7 +65,7 @@ function addCar(world, imageTable, x, y, z)
     car:setImageCenter(0.5, 0.3)
     car:setAngle(math.rad(-90))
     car:setAlignment(mode7.sprite.kAlignmentOdd, mode7.sprite.kAlignmentOdd)
-
+    
     local dataSource = car:getDataSource()
 
     dataSource:setMinimumWidth(4)

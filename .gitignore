@@ -6,5 +6,6 @@
 /Source/pdex.*
 /blender/output/
 /blender/*.blend1
+/assets/full-car
 luacheck.py
 .python-version
