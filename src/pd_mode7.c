@@ -2556,11 +2556,7 @@ static int rectIntersect(PDMode7_Rect rect1, PDMode7_Rect rect2)
     return (rect1.x < (rect2.x + rect2.width) &&
             rect2.x < (rect1.x + rect1.width) &&
             rect1.y < (rect2.y + rect2.height) &&
-            rect2.y < (rect1.y + rect1.height)) ||
-    (rect1.x == rect2.x &&
-     rect1.y == rect2.y &&
-     rect1.width == rect2.width &&
-     rect1.height == rect2.height);
+            rect2.y < (rect1.y + rect1.height));
 }
 
 static void rectAdjust(PDMode7_Rect rect, int width, int height, PDMode7_Rect *adjustedRect, int *offsetX, int *offsetY)
@@ -2827,7 +2823,10 @@ static int arrayIndexOf(_PDMode7_Array *array, void *item)
 
 static void arrayClear(_PDMode7_Array *array)
 {
-    playdate->system->realloc(array->items, 0);
+    if(array->items)
+    {
+        playdate->system->realloc(array->items, 0);
+    }
     array->items = NULL;
     array->length = 0;
 }
@@ -3708,14 +3707,14 @@ static int lua_newWorld(lua_State *L)
     PDMode7_Camera *mainCamera = _world->mainCamera;
     _PDMode7_Camera *_mainCamera = mainCamera->prv;
     
-    LuaUDObject *cameraRef = playdate->lua->pushObject(mainCamera, lua_kCamera, 1);
+    LuaUDObject *cameraRef = playdate->lua->pushObject(mainCamera, lua_kCamera, 0);
     _mainCamera->luaRef = cameraRef;
     GC_retain(cameraRef);
     // In Lua, mainCamera is not managed by world
     _mainCamera->isManaged = 0;
     _world->mainCamera = NULL;
     
-    playdate->lua->pushObject(world, lua_kWorld, 2);
+    playdate->lua->pushObject(world, lua_kWorld, 0);
     
     return 1;
 }
@@ -3921,7 +3920,7 @@ static int lua_newDisplay(lua_State *L)
     int height = playdate->lua->getArgInt(4);
     PDMode7_Display *display = newDisplay(x, y, width, height);
     _PDMode7_Display *_display = display->prv;
-    _display->luaRef = playdate->lua->pushObject(display, lua_kDisplay, 1);
+    _display->luaRef = playdate->lua->pushObject(display, lua_kDisplay, 0);
     return 1;
 }
 
