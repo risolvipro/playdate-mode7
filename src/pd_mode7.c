@@ -925,8 +925,8 @@ static void worldDraw(PDMode7_World *pWorld, PDMode7_Display *pDisplay)
 
 static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScale displayScale, uint8_t color, int bitPosition, uint8_t patternRow)
 {
-    uint8_t patternIndex = ((color % 16) > 8) ? (color / 16 + 1) : (color / 16);
-
+    uint8_t patternIndex = (color < 255) ? color / 15 : 16;
+    
     switch(displayScale)
     {
         case kMode7DisplayScale1x1:
