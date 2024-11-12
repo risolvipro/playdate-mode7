@@ -782,8 +782,8 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
         // Advance pointLeft in the loop
         for(int x = 0; x < display->rect.width; x += xStep)
         {
-            int mapX = roundf(leftPoint.x);
-            int mapY = roundf(leftPoint.y);
+            int mapX = floorf(leftPoint.x);
+            int mapY = floorf(leftPoint.y);
             
             uint8_t color = world->planeFillColor.gray;
             
