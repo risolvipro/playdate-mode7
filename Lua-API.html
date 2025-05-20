@@ -33,7 +33,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.3.1</div>
+        <div class="version">1.3.2</div>
     </div>
 </div>        </div>
         <div class="column-page">
@@ -66,7 +66,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.3.1</div>
+        <div class="version">1.3.2</div>
     </div>
 </div>                </div>
 
@@ -226,6 +226,80 @@
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Returns the plane color to be used for the out-of-bounds space.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-world-setCeilingBitmap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:setCeilingBitmap(bitmap)</span><a href="Lua-API.html#def-world-setCeilingBitmap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-setCeilingBitmap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-setCeilingBitmap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Display* mode7->world->setCeilingBitmap(PDMode7_World *world, PDMode7_Bitmap *bitmap);</span><a href="C-API.html#def-world-setCeilingBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets a bitmap for the ceiling.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>Compile the library with the macro <b>PD_MODE7_CEILING 1</b> to use this feature. The bitmap is a grayscale image loaded with <a class="definition-link" href="#def-bitmap-loadPGM">bitmap.loadPGM(path)</a>.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-world-getCeilingBitmap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:getCeilingBitmap() <span class="definition-return-type">mode7.bitmap</span></span><a href="Lua-API.html#def-world-getCeilingBitmap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-getCeilingBitmap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-getCeilingBitmap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Bitmap* mode7->world->getCeilingBitmap(PDMode7_World *world);</span><a href="C-API.html#def-world-getCeilingBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Returns the ceiling bitmap.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-world-setCeilingFillColor" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:setCeilingFillColor(color)</span><a href="Lua-API.html#def-world-setCeilingFillColor" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-setCeilingFillColor"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-setCeilingFillColor">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->world->setCeilingFillColor(PDMode7_World *world, PDMode7_Color color);</span><a href="C-API.html#def-world-setCeilingFillColor" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the ceiling color to be used for the out-of-bounds space.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>Create the color with mode7.color.grayscale.new(gray, alpha)</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-world-getCeilingFillColor" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:getCeilingFillColor() <span class="definition-return-type">mode7.color</span></span><a href="Lua-API.html#def-world-getCeilingFillColor" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-getCeilingFillColor"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-getCeilingFillColor">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Color mode7->world->getCeilingFillColor(PDMode7_World *world);</span><a href="C-API.html#def-world-getCeilingFillColor" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Returns the ceiling color to be used for the out-of-bounds space.</p></div>
                                                                     </div>
                             </div>
                                                     
@@ -633,6 +707,47 @@ mode7.display.kOrientationPortraitUpsideDown</pre></div>
                                                                     </div>
                             </div>
                                                     
+                            <div id="def-display-setFlipMode" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.display:setFlipMode(flipMode)</span><a href="Lua-API.html#def-display-setFlipMode" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-display-setFlipMode"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-display-setFlipMode">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->display->setFlipMode(PDMode7_Display *display, PDMode7_DisplayFlipMode flipMode);</span><a href="C-API.html#def-display-setFlipMode" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the display flip mode.</p><p>This parameter, in conjunction with the orientation, is used to determine the display visualization.</p></div>
+                                                                                                                    <div class="definition-block definition-note"><p>Flip mode is supported only for the landscape orientation.</p></div>
+                                                                                                                    <div class="definition-block definition-code last"><pre class="code inline no-margins">mode7.display.kFlipModeNone
+mode7.display.kFlipModeX
+mode7.display.kFlipModeY
+mode7.display.kFlipModeXY</pre></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-display-getFlipMode" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.display:getFlipMode() <span class="definition-return-type">mode7.display.kDisplayFlipMode</span></span><a href="Lua-API.html#def-display-getFlipMode" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-display-getFlipMode"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-display-getFlipMode">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_DisplayFlipMode mode7->display->getFlipMode(PDMode7_Display *display);</span><a href="C-API.html#def-display-getFlipMode" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the display flip mode.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
                             <div id="def-display-setCamera" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
@@ -743,6 +858,24 @@ mode7.display.kScale4x2</pre></div>
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Returns the y position of the horizon, relative to the current display.</p></div>
+                                                                    </div>
+                            </div>
+                                                    
+                            <div id="def-display-pitchForHorizon" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.display:pitchForHorizon(horizon)</span><a href="Lua-API.html#def-display-pitchForHorizon" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-display-pitchForHorizon"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-display-pitchForHorizon">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">float mode7->display->pitchForHorizon(PDMode7_Display *display, float horizon);</span><a href="C-API.html#def-display-pitchForHorizon" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Returns the pitch angle needed to align the horizon at the specified y position.</p></div>
                                                                     </div>
                             </div>
                                                     
