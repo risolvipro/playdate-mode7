@@ -11,6 +11,10 @@
 #include <stdio.h>
 #include <pd_api.h>
 
+#ifndef PD_MODE7_CEILING
+#define PD_MODE7_CEILING 0
+#endif
+
 typedef struct PDMode7_Vec2 {
     float x, y;
 } PDMode7_Vec2;
@@ -47,6 +51,13 @@ typedef enum {
     kMode7DisplayOrientationPortrait,
     kMode7DisplayOrientationPortraitUpsideDown
 } PDMode7_DisplayOrientation;
+
+typedef enum {
+    kMode7DisplayFlipModeNone,
+    kMode7DisplayFlipModeX,
+    kMode7DisplayFlipModeY,
+    kMode7DisplayFlipModeXY
+} PDMode7_DisplayFlipMode;
 
 typedef enum {
     kMode7SpriteDataSourceFrame,
@@ -127,6 +138,10 @@ typedef struct PDMode7_World_API {
     PDMode7_Bitmap*(*getPlaneBitmap)(PDMode7_World *world);
     PDMode7_Color(*getPlaneFillColor)(PDMode7_World *world);
     void(*setPlaneFillColor)(PDMode7_World *world, PDMode7_Color color);
+    void(*setCeilingBitmap)(PDMode7_World *world, PDMode7_Bitmap *bitmap);
+    PDMode7_Bitmap*(*getCeilingBitmap)(PDMode7_World *world);
+    PDMode7_Color(*getCeilingFillColor)(PDMode7_World *world);
+    void(*setCeilingFillColor)(PDMode7_World *world, PDMode7_Color color);
     PDMode7_Vec3(*worldToDisplayPoint)(PDMode7_World *world, PDMode7_Vec3 point, PDMode7_Display *display);
     PDMode7_Vec3(*displayToPlanePoint)(PDMode7_World *world, int displayX, int displayY, PDMode7_Display *display);
     PDMode7_Vec2(*planeToBitmapPoint)(PDMode7_World *world, float pointX, float pointY);
@@ -173,12 +188,15 @@ typedef struct PDMode7_Display_API {
     void(*setRect)(PDMode7_Display *display, int x, int y, int width, int height);
     PDMode7_DisplayOrientation(*getOrientation)(PDMode7_Display *display);
     void(*setOrientation)(PDMode7_Display *display, PDMode7_DisplayOrientation orientation);
+    PDMode7_DisplayFlipMode(*getFlipMode)(PDMode7_Display *display);
+    void(*setFlipMode)(PDMode7_Display *display, PDMode7_DisplayFlipMode flipMode);
     PDMode7_Camera*(*getCamera)(PDMode7_Display *display);
     void(*setCamera)(PDMode7_Display *display, PDMode7_Camera *camera);
     PDMode7_Background*(*getBackground)(PDMode7_Display *display);
     PDMode7_DisplayScale(*getScale)(PDMode7_Display *display);
     void(*setScale)(PDMode7_Display *display, PDMode7_DisplayScale scale);
     int(*getHorizon)(PDMode7_Display *display);
+    float(*pitchForHorizon)(PDMode7_Display *display, float horizon);
     PDMode7_Vec2(*convertPointFromOrientation)(PDMode7_Display *display, float x, float y);
     PDMode7_Vec2(*convertPointToOrientation)(PDMode7_Display *display, float x, float y);
     PDMode7_World*(*getWorld)(PDMode7_Display *display);

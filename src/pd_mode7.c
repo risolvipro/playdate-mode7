@@ -152,6 +152,8 @@ typedef struct {
     PDMode7_Camera *mainCamera;
     PDMode7_Bitmap *planeBitmap;
     PDMode7_Color planeFillColor;
+    PDMode7_Bitmap *ceilingBitmap;
+    PDMode7_Color ceilingFillColor;
     _PDMode7_Array *sprites;
     _PDMode7_Grid *grid;
 } _PDMode7_World;
@@ -171,6 +173,7 @@ typedef struct {
     PDMode7_Rect rect;
     PDMode7_Rect absoluteRect;
     PDMode7_DisplayOrientation orientation;
+    PDMode7_DisplayFlipMode flipMode;
     LCDBitmap *secondaryFramebuffer;
     PDMode7_Camera *camera;
     PDMode7_DisplayScale scale;
@@ -278,7 +281,8 @@ static int displayGetHorizon(PDMode7_Display *pDisplay);
 static PDMode7_Vec3 displayToPlanePoint(PDMode7_Display *pDisplay, int displayX, int displayY, _PDMode7_Parameters *p);
 static PDMode7_Vec3 worldToDisplayPoint(PDMode7_Display *pDisplay, PDMode7_Vec3 point, _PDMode7_Parameters *p);
 static PDMode7_Vec3 displayMultiplierForScanlineAt(PDMode7_Display *pDisplay, PDMode7_Vec3 point, _PDMode7_Parameters *p);
-static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScale scale, uint8_t color, int bitPosition, uint8_t patternRow);
+static inline uint8_t worldSampleColor(PDMode7_Bitmap *pBitmap, int x, int y, uint8_t fillColor);
+static inline void worldSetColor(uint8_t color, PDMode7_DisplayScale displayScale, uint8_t *ptr, int rowbytes, int bitPosition, int y, int dirY);
 static void getDisplayScaleStep(PDMode7_DisplayScale scale, int *xStep, int *yStep);
 static inline PDMode7_DisplayScale truncatedDisplayScale(PDMode7_DisplayScale scale);
 static PDMode7_Camera* displayGetCamera(PDMode7_Display *display);
@@ -302,6 +306,7 @@ static _PDMode7_Grid* newGrid(float width, float height, float depth, int cellSi
 static void gridRemoveSprite(_PDMode7_Grid *grid, PDMode7_Sprite *pSprite);
 static void gridUpdateSprite(_PDMode7_Grid *grid, PDMode7_Sprite *pSprite);
 static _PDMode7_Array* gridGetSpritesAtPoint(_PDMode7_Grid *grid, PDMode7_Vec3 point, int distanceUnits);
+static void releaseBitmap(PDMode7_Bitmap *pBitmap);
 static void bitmapLayerSetBitmap(PDMode7_BitmapLayer *layer, PDMode7_Bitmap *bitmap);
 static void bitmapLayerDidChange(PDMode7_BitmapLayer *pLayer);
 static void bitmapLayerDraw(PDMode7_BitmapLayer *pLayer);
@@ -341,6 +346,8 @@ static PDMode7_World* worldWithConfiguration(PDMode7_WorldConfiguration configur
     
     _world->planeBitmap = NULL;
     _world->planeFillColor = newGrayscaleColor(255, 255);
+    _world->ceilingBitmap = NULL;
+    _world->ceilingFillColor = newGrayscaleColor(255, 255);
     _world->sprites = newArray();
     _world->numberOfDisplays = 0;
     
@@ -737,8 +744,9 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
     
     // Set the framebuffer initial offset
     int startY = display->rect.y + parameters->horizon;
-    int frameStart = startY * rowbytes + display->rect.x / 8;
-    
+    uint8_t *frameStart = framebuffer + startY * rowbytes + display->rect.x / 8;
+    int frameY = 0;
+
     int xStep; int yStep;
     getDisplayScaleStep(display->scale, &xStep, &yStep);
     
@@ -747,7 +755,7 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
 
     // Calculate the framebuffer increment
     int rowSize = rowbytes * yStep;
-    
+
     for(int y = 0; y < parameters->planeHeight; y += yStep)
     {
         int relativeY = parameters->horizon + y;
@@ -769,35 +777,40 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
         float dyStep = (rightPoint.y - leftPoint.y) * displayWidthInv;
         
         // Set the initial framebuffer offset and bit position
-        int frameOffset = frameStart;
+        int frameX = 0;
         int bitPosition = 0;
         
         // If y exceeds display height, get truncated scale
-        PDMode7_DisplayScale displayScale = display->scale;
+        PDMode7_DisplayScale planeScale = display->scale;
         if((relativeY + yStep) > display->rect.height)
         {
-            displayScale = truncatedDisplayScale(displayScale);
+            planeScale = truncatedDisplayScale(planeScale);
         }
         
+#if PD_MODE7_CEILING
+        int ceilingRelativeY = parameters->horizon - y;
+        PDMode7_DisplayScale ceilingScale = display->scale;
+        if((ceilingRelativeY - yStep) < 0)
+        {
+            ceilingScale = truncatedDisplayScale(ceilingScale);
+        }
+#endif
         // Advance pointLeft in the loop
         for(int x = 0; x < display->rect.width; x += xStep)
         {
             int mapX = floorf(leftPoint.x);
             int mapY = floorf(leftPoint.y);
             
-            uint8_t color = world->planeFillColor.gray;
+            uint8_t color = worldSampleColor(world->planeBitmap, mapX, mapY, world->planeFillColor.gray);
+            worldSetColor(color, planeScale, frameStart + frameY + frameX, rowbytes, bitPosition, absoluteY, 1);
             
-            _PDMode7_Bitmap *bitmap = world->planeBitmap->prv;
-            
-            // Check for point inside the bitmap
-            if(mapX >= 0 && mapX < bitmap->width && mapY >= 0 && mapY < bitmap->height)
+#if PD_MODE7_CEILING
+            if(world->ceilingBitmap && ceilingRelativeY > 0)
             {
-                // Get color from bitmap
-                color = bitmap->data[bitmap->width * mapY + mapX];
+                uint8_t ceilingColor = worldSampleColor(world->ceilingBitmap, mapX, mapY, world->ceilingFillColor.gray);
+                worldSetColor(ceilingColor, ceilingScale, frameStart - frameY - rowbytes + frameX, -rowbytes, bitPosition, absoluteY - 1, -1);
             }
-            
-            worldSetColor((framebuffer + frameOffset), rowbytes, displayScale, color, bitPosition, (absoluteY & 3));
-            
+#endif
             // Advance the point by the step
             leftPoint.x += dxStep;
             leftPoint.y += dyStep;
@@ -807,18 +820,23 @@ static void drawPlane(PDMode7_World *pWorld, PDMode7_Display *pDisplay, _PDMode7
             if(bitPosition == 8)
             {
                 // Increment the framebuffer offset and reset bitPosition
-                frameOffset++;
+                frameX++;
                 bitPosition = 0;
             }
         }
         
-        // Increment the frame index
-        frameStart += rowSize;
+        // Increment the framebuffer index
+        frameY += rowSize;
     }
     
     if(!target)
     {
-        playdate->graphics->markUpdatedRows(parameters->horizon, parameters->horizon + parameters->planeHeight);
+        int absoluteHorizon = display->rect.y + parameters->horizon;
+#if PD_MODE7_CEILING
+        playdate->graphics->markUpdatedRows(absoluteHorizon - parameters->planeHeight, absoluteHorizon + parameters->planeHeight - 1);
+#else
+        playdate->graphics->markUpdatedRows(absoluteHorizon, absoluteHorizon + parameters->planeHeight - 1);
+#endif
     }
 }
 
@@ -902,9 +920,40 @@ static void worldDraw(PDMode7_World *pWorld, PDMode7_Display *pDisplay)
     {
         switch(display->orientation)
         {
+            case kMode7DisplayOrientationLandscapeLeft:
+            {
+                LCDBitmapFlip bitmapFlip = kBitmapUnflipped;
+                if(display->flipMode == kMode7DisplayFlipModeX)
+                {
+                    bitmapFlip = kBitmapFlippedX;
+                }
+                else if(display->flipMode == kMode7DisplayFlipModeY)
+                {
+                    bitmapFlip = kBitmapFlippedY;
+                }
+                else if(display->flipMode == kMode7DisplayFlipModeXY)
+                {
+                    bitmapFlip = kBitmapFlippedXY;
+                }
+                playdate->graphics->drawBitmap(target, display->absoluteRect.x, display->absoluteRect.y, bitmapFlip);
+                break;
+            }
             case kMode7DisplayOrientationLandscapeRight:
             {
-                playdate->graphics->drawBitmap(target, LCD_COLUMNS - (display->absoluteRect.width + display->absoluteRect.x), LCD_ROWS - (display->absoluteRect.height + display->absoluteRect.y), kBitmapFlippedXY);
+                LCDBitmapFlip bitmapFlip = kBitmapFlippedXY;
+                if(display->flipMode == kMode7DisplayFlipModeX)
+                {
+                    bitmapFlip = kBitmapFlippedY;
+                }
+                else if(display->flipMode == kMode7DisplayFlipModeY)
+                {
+                    bitmapFlip = kBitmapFlippedX;
+                }
+                else if(display->flipMode == kMode7DisplayFlipModeXY)
+                {
+                    bitmapFlip = kBitmapUnflipped;
+                }
+                playdate->graphics->drawBitmap(target, LCD_COLUMNS - (display->absoluteRect.width + display->absoluteRect.x), LCD_ROWS - (display->absoluteRect.height + display->absoluteRect.y), bitmapFlip);
                 break;
             }
             case kMode7DisplayOrientationPortrait:
@@ -923,7 +972,20 @@ static void worldDraw(PDMode7_World *pWorld, PDMode7_Display *pDisplay)
     }
 }
 
-static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScale displayScale, uint8_t color, int bitPosition, uint8_t patternRow)
+static inline uint8_t worldSampleColor(PDMode7_Bitmap *pBitmap, int x, int y, uint8_t fillColor)
+{
+    _PDMode7_Bitmap *bitmap = pBitmap->prv;
+    
+    // Check for point inside the bitmap
+    if(x >= 0 && x < bitmap->width && y >= 0 && y < bitmap->height)
+    {
+        // Get color from bitmap
+        return bitmap->data[bitmap->width * y + x];
+    }
+    return fillColor;
+}
+
+static inline void worldSetColor(uint8_t color, PDMode7_DisplayScale displayScale, uint8_t *ptr, int rowbytes, int bitPosition, int y, int dirY)
 {
     uint8_t patternIndex = ((uint16_t)color * 17) >> 8;
     
@@ -931,7 +993,7 @@ static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScal
     {
         case kMode7DisplayScale1x1:
         {
-            uint8_t pattern = patterns4x4[patternIndex][patternRow];
+            uint8_t pattern = patterns4x4[patternIndex][y & 3];
             uint8_t mask = 0b00000001 << (7 - bitPosition);
             
             *ptr = (*ptr & ~mask) | (pattern & mask);
@@ -940,7 +1002,7 @@ static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScal
         }
         case kMode7DisplayScale2x1:
         {
-            uint8_t pattern = patterns4x4[patternIndex][patternRow];
+            uint8_t pattern = patterns4x4[patternIndex][y & 3];
             uint8_t mask = 0b00000011 << (6 - bitPosition);
             
             *ptr = (*ptr & ~mask) | (pattern & mask);
@@ -949,8 +1011,8 @@ static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScal
         }
         case kMode7DisplayScale2x2:
         {
-            uint8_t pattern1 = patterns4x4[patternIndex][patternRow];
-            uint8_t pattern2 = patterns4x4[patternIndex][(patternRow + 1) & 3];
+            uint8_t pattern1 = patterns4x4[patternIndex][y & 3];
+            uint8_t pattern2 = patterns4x4[patternIndex][(y + dirY) & 3];
 
             uint8_t mask = 0b00000011 << (6 - bitPosition);
             
@@ -962,7 +1024,7 @@ static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScal
         }
         case kMode7DisplayScale4x1:
         {
-            uint8_t pattern = patterns4x4[patternIndex][patternRow];
+            uint8_t pattern = patterns4x4[patternIndex][y & 3];
             uint8_t mask = 0b00001111 << (4 - bitPosition);
             
             *ptr = (*ptr & ~mask) | (pattern & mask);
@@ -971,8 +1033,8 @@ static inline void worldSetColor(uint8_t *ptr, int rowbytes, PDMode7_DisplayScal
         }
         case kMode7DisplayScale4x2:
         {
-            uint8_t pattern1 = patterns4x4[patternIndex][patternRow];
-            uint8_t pattern2 = patterns4x4[patternIndex][(patternRow + 1) & 3];
+            uint8_t pattern1 = patterns4x4[patternIndex][y & 3];
+            uint8_t pattern2 = patterns4x4[patternIndex][(y + dirY) & 3];
 
             uint8_t mask = 0b00001111 << (4 - bitPosition);
             
@@ -1041,7 +1103,7 @@ static PDMode7_Vec3 worldToDisplayPoint(PDMode7_Display *pDisplay, PDMode7_Vec3 
     float displayX = 0;
     float displayY = 0;
     float displayZ = 0;
-
+    
     // Prevent division by 0
     if(localZ != 0)
     {
@@ -1313,7 +1375,7 @@ static void setPlaneBitmap(PDMode7_World *world, PDMode7_Bitmap *bitmap)
         }
     }
     
-    if(_bitmap->luaRef)
+    if(bitmap && _bitmap->luaRef)
     {
         GC_retain(_bitmap->luaRef);
     }
@@ -1321,14 +1383,51 @@ static void setPlaneBitmap(PDMode7_World *world, PDMode7_Bitmap *bitmap)
     _world->planeBitmap = bitmap;
 }
 
-static void worldSetPlaneFillColor(PDMode7_World *world, PDMode7_Color color)
+static void setPlaneFillColor(PDMode7_World *world, PDMode7_Color color)
 {
     ((_PDMode7_World*)world->prv)->planeFillColor = color;
 }
 
-static PDMode7_Color worldGetPlaneFillColor(PDMode7_World *world)
+static PDMode7_Color getPlaneFillColor(PDMode7_World *world)
 {
     return ((_PDMode7_World*)world->prv)->planeFillColor;
+}
+
+static PDMode7_Bitmap* getCeilingBitmap(PDMode7_World *world)
+{
+    return ((_PDMode7_World*)world->prv)->ceilingBitmap;
+}
+
+static void setCeilingBitmap(PDMode7_World *world, PDMode7_Bitmap *bitmap)
+{
+    _PDMode7_World *_world = world->prv;
+    _PDMode7_Bitmap *_bitmap = bitmap->prv;
+
+    if(_world->ceilingBitmap)
+    {
+        _PDMode7_Bitmap *currentBitmap = _world->ceilingBitmap->prv;
+        if(currentBitmap->luaRef)
+        {
+            GC_release(currentBitmap->luaRef);
+        }
+    }
+    
+    if(bitmap && _bitmap->luaRef)
+    {
+        GC_retain(_bitmap->luaRef);
+    }
+    
+    _world->ceilingBitmap = bitmap;
+}
+
+static void setCeilingFillColor(PDMode7_World *world, PDMode7_Color color)
+{
+    ((_PDMode7_World*)world->prv)->ceilingFillColor = color;
+}
+
+static PDMode7_Color getCeilingFillColor(PDMode7_World *world)
+{
+    return ((_PDMode7_World*)world->prv)->ceilingFillColor;
 }
 
 static void freeWorld(PDMode7_World *pWorld)
@@ -1350,10 +1449,13 @@ static void freeWorld(PDMode7_World *pWorld)
     freeGrid(world->grid);
     freeArray(world->sprites);
     
-    _PDMode7_Bitmap *_bitmap = world->planeBitmap->prv;
-    if(_bitmap->luaRef)
+    if(world->planeBitmap)
     {
-        GC_release(_bitmap->luaRef);
+        releaseBitmap(world->planeBitmap);
+    }
+    if(world->ceilingBitmap)
+    {
+        releaseBitmap(world->ceilingBitmap);
     }
     
     if(world->mainCamera)
@@ -1393,6 +1495,7 @@ static PDMode7_Display* newDisplay(int x, int y, int width, int height)
     _display->absoluteRect = newRect(0, 0, 0, 0);
     _display->scale = kMode7DisplayScale2x2;
     _display->orientation = kMode7DisplayOrientationLandscapeLeft;
+    _display->flipMode = kMode7DisplayFlipModeNone;
     _display->secondaryFramebuffer = NULL;
     
     _display->visibleInstances = newArray();
@@ -1462,7 +1565,6 @@ static PDMode7_Background* displayGetBackground(PDMode7_Display *display)
     return ((_PDMode7_Display*)display->prv)->background;
 }
 
-
 static int displayNeedsClip(PDMode7_Display *display)
 {
     _PDMode7_Display *_display = display->prv;
@@ -1481,7 +1583,7 @@ static void displayRectDidChange(PDMode7_Display *display)
     
     _display->rect = _display->absoluteRect;
     
-    if(_display->orientation != kMode7DisplayOrientationLandscapeLeft)
+    if(_display->orientation != kMode7DisplayOrientationLandscapeLeft || _display->flipMode != kMode7DisplayFlipModeNone)
     {
         _display->secondaryFramebuffer = playdate->graphics->newBitmap(_display->absoluteRect.width, _display->absoluteRect.height, kColorWhite);
         _display->rect = newRect(0, 0, _display->absoluteRect.width, _display->absoluteRect.height);
@@ -1519,10 +1621,31 @@ static void displaySetOrientation(PDMode7_Display *display, PDMode7_DisplayOrien
     displayRectDidChange(display);
 }
 
+static PDMode7_DisplayFlipMode displayGetFlipMode(PDMode7_Display *display)
+{
+    return ((_PDMode7_Display*)display->prv)->flipMode;
+}
+
+static void displaySetFlipMode(PDMode7_Display *display, PDMode7_DisplayFlipMode flipMode)
+{
+    _PDMode7_Display *_display = display->prv;
+    _display->flipMode = flipMode;
+    displayRectDidChange(display);
+}
+
 static int displayGetHorizon(PDMode7_Display *pDisplay)
 {
     _PDMode7_Parameters parameters = worldGetParameters(pDisplay);
     return parameters.horizon;
+}
+
+static float displayPitchForHorizon(PDMode7_Display *pDisplay, float horizon)
+{
+    _PDMode7_Parameters parameters = worldGetParameters(pDisplay);
+    _PDMode7_Display *display = pDisplay->prv;
+    float halfHeight = (float)display->rect.height / 2;
+    float pitch = atanf((horizon / halfHeight - 1) * parameters.tanHalfFov.y);
+    return pitch;
 }
 
 static PDMode7_World* displayGetWorld(PDMode7_Display *display)
@@ -3276,6 +3399,15 @@ static void bitmapRemoveAllLayers(PDMode7_Bitmap *pBitmap)
     }
 }
 
+static void releaseBitmap(PDMode7_Bitmap *pBitmap)
+{
+    _PDMode7_Bitmap *bitmap = pBitmap->prv;
+    if(bitmap->luaRef)
+    {
+        GC_release(bitmap->luaRef);
+    }
+}
+
 static void freeBitmap(PDMode7_Bitmap *pBitmap)
 {
     _PDMode7_Bitmap *bitmap = pBitmap->prv;
@@ -3674,6 +3806,22 @@ static char *lua_kImageTable = "mode7.imagetable";
 static char *lua_kBackground = "mode7.background";
 static char *lua_kArray = "mode7.array";
 
+static PDMode7_Color lua_readGrayscaleColor(lua_State *L, int i)
+{
+    int argCount = playdate->lua->getArgCount();
+    int gray = playdate->lua->getArgInt(i);
+    int alpha = 255;
+    if((i + 1) < argCount)
+    {
+        alpha = playdate->lua->getArgInt(i + 1);
+    }
+    if(gray >= 0 && gray <= 255 && alpha >= 0 && alpha <= 255)
+    {
+        return newGrayscaleColor(gray, alpha);
+    }
+    return newGrayscaleColor(0, 0);
+}
+
 static int lua_poolRealloc(lua_State *L)
 {
     int size = playdate->lua->getArgInt(1);
@@ -3735,6 +3883,22 @@ static int lua_setPlaneBitmap(lua_State *L)
     return 0;
 }
 
+static int lua_getCeilingBitmap(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    PDMode7_Bitmap *bitmap = getCeilingBitmap(world);
+    playdate->lua->pushObject(bitmap, lua_kBitmap, 0);
+    return 1;
+}
+
+static int lua_setCeilingBitmap(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(2, lua_kBitmap, NULL);
+    setCeilingBitmap(world, bitmap);
+    return 0;
+}
+
 static int lua_worldGetMainDisplay(lua_State *L)
 {
     PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
@@ -3752,7 +3916,7 @@ static int lua_addDisplay(lua_State *L)
     return 1;
 }
 
-static int lua_worldGetPlaneFillColor(lua_State *L)
+static int lua_getPlaneFillColor(lua_State *L)
 {
     PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
     _PDMode7_World *_world = world->prv;
@@ -3761,20 +3925,26 @@ static int lua_worldGetPlaneFillColor(lua_State *L)
     return 2;
 }
 
-static int lua_worldSetPlaneFillColor(lua_State *L)
+static int lua_setPlaneFillColor(lua_State *L)
 {
-    int argCount = playdate->lua->getArgCount();
     PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
-    int gray = playdate->lua->getArgInt(2);
-    int alpha = 255;
-    if(argCount > 2)
-    {
-        alpha = playdate->lua->getArgInt(3);
-    }
-    if(gray >= 0 && gray <= 255 && alpha >= 0 && alpha <= 255)
-    {
-        worldSetPlaneFillColor(world, newGrayscaleColor(gray, alpha));
-    }
+    setPlaneFillColor(world, lua_readGrayscaleColor(L, 2));
+    return 0;
+}
+
+static int lua_getCeilingFillColor(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    _PDMode7_World *_world = world->prv;
+    playdate->lua->pushInt(_world->ceilingFillColor.gray);
+    playdate->lua->pushInt(_world->ceilingFillColor.alpha);
+    return 2;
+}
+
+static int lua_setCeilingFillColor(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    setCeilingFillColor(world, lua_readGrayscaleColor(L, 2));
     return 0;
 }
 
@@ -3895,10 +4065,14 @@ static const lua_reg lua_world[] = {
     { "addSprite", lua_addSprite },
     { "getSprites", lua_getSprites },
     { "getVisibleSpriteInstances", lua_getVisibleSpriteInstances },
-    { "_getPlaneFillColor", lua_worldGetPlaneFillColor },
-    { "_setPlaneFillColor", lua_worldSetPlaneFillColor },
+    { "_getPlaneFillColor", lua_getPlaneFillColor },
+    { "_setPlaneFillColor", lua_setPlaneFillColor },
+    { "_getCeilingFillColor", lua_getCeilingFillColor },
+    { "_setCeilingFillColor", lua_setCeilingFillColor },
     { "getPlaneBitmap", lua_getPlaneBitmap },
     { "setPlaneBitmap", lua_setPlaneBitmap },
+    { "getCeilingBitmap", lua_getCeilingBitmap },
+    { "setCeilingBitmap", lua_setCeilingBitmap },
     { "getMainDisplay", lua_worldGetMainDisplay },
     { "addDisplay", lua_addDisplay },
     { "displayToPlanePoint", lua_displayToPlanePoint },
@@ -3964,6 +4138,15 @@ static int lua_displayGetHorizon(lua_State *L)
     return 1;
 }
 
+static int lua_displayPitchForHorizon(lua_State *L)
+{
+    PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
+    float horizon = playdate->lua->getArgFloat(2);
+    float pitch = displayPitchForHorizon(display, horizon);
+    playdate->lua->pushFloat(pitch);
+    return 1;
+}
+
 static int lua_displayGetWorld(lua_State *L)
 {
     PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
@@ -4018,6 +4201,21 @@ static int lua_displaySetOrientation(lua_State *L)
     return 0;
 }
 
+static int lua_displayGetFlipMode(lua_State *L)
+{
+    PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
+    PDMode7_DisplayFlipMode flipMode = displayGetFlipMode(display);
+    playdate->lua->pushInt(flipMode);
+    return 1;
+}
+
+static int lua_displaySetFlipMode(lua_State *L)
+{
+    PDMode7_Display *display = playdate->lua->getArgObject(1, lua_kDisplay, NULL);
+    PDMode7_DisplayFlipMode flipMode = playdate->lua->getArgInt(2);
+    displaySetFlipMode(display, flipMode);
+    return 0;
+}
 
 static int lua_displayConvertPointFromOrientation(lua_State *L)
 {
@@ -4065,8 +4263,11 @@ static const lua_reg lua_display[] = {
     { "setRect", lua_displaySetRect },
     { "getOrientation", lua_displayGetOrientation },
     { "setOrientation", lua_displaySetOrientation },
+    { "getFlipMode", lua_displayGetFlipMode },
+    { "setFlipMode", lua_displaySetFlipMode },
     { "getBackground", lua_displayGetBackground },
     { "getHorizon", lua_displayGetHorizon },
+    { "pitchForHorizon", lua_displayPitchForHorizon },
     { "convertPointFromOrientation", lua_displayConvertPointFromOrientation },
     { "convertPointToOrientation", lua_displayConvertPointToOrientation },
     { "getWorld", lua_displayGetWorld },
@@ -5245,8 +5446,12 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->world->draw = worldDraw; // LUACHECK
     mode7->world->getPlaneBitmap = getPlaneBitmap; // LUACHECK
     mode7->world->setPlaneBitmap = setPlaneBitmap; // LUACHECK
-    mode7->world->getPlaneFillColor = worldGetPlaneFillColor; // LUACHECK
-    mode7->world->setPlaneFillColor = worldSetPlaneFillColor; // LUACHECK
+    mode7->world->getPlaneFillColor = getPlaneFillColor; // LUACHECK
+    mode7->world->setPlaneFillColor = setPlaneFillColor; // LUACHECK
+    mode7->world->getCeilingBitmap = getCeilingBitmap; // LUACHECK
+    mode7->world->setCeilingBitmap = setCeilingBitmap; // LUACHECK
+    mode7->world->getCeilingFillColor = getCeilingFillColor; // LUACHECK
+    mode7->world->setCeilingFillColor = setCeilingFillColor; // LUACHECK
     mode7->world->addSprite = addSprite; // LUACHECK
     mode7->world->addDisplay = addDisplay; // LUACHECK
     mode7->world->getSprites = getSprites; // LUACHECK
@@ -5264,11 +5469,16 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->display->setRect = displaySetRect; // LUACHECK
     mode7->display->getOrientation = displayGetOrientation; // LUACHECK
     mode7->display->setOrientation = displaySetOrientation; // LUACHECK
+    mode7->display->getFlipMode = displayGetFlipMode; // LUACHECK
+    mode7->display->setFlipMode = displaySetFlipMode; // LUACHECK
+    mode7->display->setOrientation = displaySetOrientation; // LUACHECK
     mode7->display->getCamera = displayGetCamera; // LUACHECK
     mode7->display->setCamera = displaySetCamera; // LUACHECK
     mode7->display->getScale = displayGetScale; // LUACHECK
     mode7->display->setScale = displaySetScale; // LUACHECK
     mode7->display->getHorizon = displayGetHorizon; // LUACHECK
+    mode7->display->getHorizon = displayGetHorizon; // LUACHECK
+    mode7->display->pitchForHorizon = displayPitchForHorizon; // LUACHECK
     mode7->display->getBackground = displayGetBackground; // LUACHECK
     mode7->display->convertPointFromOrientation = displayConvertPointFromOrientation; // LUACHECK
     mode7->display->convertPointToOrientation = displayConvertPointToOrientation; // LUACHECK

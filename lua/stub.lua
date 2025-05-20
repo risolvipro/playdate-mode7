@@ -83,6 +83,14 @@ function mode7.world:_setPlaneFillColor(gray, alpha) end
 ---@return integer alpha
 function mode7.world:_getPlaneFillColor() return 0, 0 end
 
+---@param gray integer
+---@param alpha integer
+function mode7.world:_setCeilingFillColor(gray, alpha) end
+
+---@return integer gray
+---@return integer alpha
+function mode7.world:_getCeilingFillColor() return 0, 0 end
+
 ---@param x integer
 ---@param y integer
 ---@return integer gray
@@ -114,6 +122,18 @@ function mode7.world:setPlaneBitmap(bitmap) end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getPlaneBitmap
 ---@return mode7.bitmap
 function mode7.world:getPlaneBitmap() return {} end
+
+--- Sets a bitmap for the ceiling.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-setCeilingBitmap
+---@param bitmap mode7.bitmap
+function mode7.world:setCeilingBitmap(bitmap) end
+
+--- Returns the ceiling bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getCeilingBitmap
+---@return mode7.bitmap
+function mode7.world:getCeilingBitmap() return {} end
 
 --- Converts a world point to a display point. The z component of the returned value is 1 if the point is in front of the camera or -1 if the point is behind the camera.
 ---
@@ -249,6 +269,19 @@ function mode7.display:setOrientation(orientation) end
 ---@return integer
 function mode7.display:getOrientation() return 0 end
 
+--- Sets the display flip mode.
+--- This parameter, in conjunction with the orientation, is used to determine the display visualization.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-setFlipMode
+---@param flipMode integer
+function mode7.display:setFlipMode(flipMode) end
+
+--- Gets the display flip mode.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getFlipMode
+---@return integer
+function mode7.display:getFlipMode() return 0 end
+
 --- Sets the camera to the display.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-setCamera
@@ -287,6 +320,12 @@ function mode7.display:getBackground() return {} end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getHorizon
 ---@return integer
 function mode7.display:getHorizon() return 0 end
+
+--- Returns the pitch angle needed to align the horizon at the specified y position.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-pitchForHorizon
+---@return number
+function mode7.display:pitchForHorizon() return 0 end
 
 --- It converts a point from the orientation coordinate system, to the standard coordinate system. For a portrait orientation, the portrait point (0, 0) is converted to the standard point (400, 0).
 ---
@@ -904,7 +943,7 @@ function mode7.sprite.instance.datasource:getMinimumWidth() return 0 end
 
 --- Sets the length for the given data source key. The default length for each key is 1 (length must be greater than 0).
 --- Use this function to specify how many times a sprite is scaled and rotated in the image table.
---- E.g. For a rotation by 10 degrees, set a length of 36. For a scaling from 100px to 10px, set a length of 11.
+--- E.g. For a rotation by 10 degrees, set a length of 36. For a scaling from 100px to 10px, set a length of 10.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteDataSource-setLengthForKey
 ---@param width integer
@@ -912,15 +951,18 @@ function mode7.sprite.instance.datasource:getMinimumWidth() return 0 end
 function mode7.sprite.instance.datasource:setLengthForKey(width, key) end
 
 --- Sets the layout for the data source. It defines the order of the image table, the default value "frame, angle, pitch, scale" implies the following structure:
---- [frame-1,
----    [angle-1,
----        [pitch-1,
----            [scale-1, scale-2, scale-3, ...]
----        ],
+--- begin frame-1
+---    begin angle-1
+---        begin pitch-1
+---            save [scale-1, scale-2, scale-3, ...]
+---        end pitch-1
+---        begin pitch-2
+---            save [scale-1, scale-2, scale-3, ...]
+---        end pitch-2
 ---        ...
----    ],
+---    end angle-1
 ---    ...
---- ],
+--- end frame-1
 --- ...
 --- A sprite is: rotated clockwise starting from the frontal position (for a character sprite, angle-1 will show the character's face), rotated in the positive pitch direction (for a character sprite, the head will move towards you), scaled from maximum to minimum width.
 --- Notes:

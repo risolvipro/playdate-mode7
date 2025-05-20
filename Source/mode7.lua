@@ -72,6 +72,23 @@ function mode7.world:setPlaneFillColor(color)
     self:_setPlaneFillColor(color.gray, color.alpha)
 end
 
+--- Returns the ceiling color to be used for the out-of-bounds space.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getCeilingFillColor
+---@return mode7.color
+function mode7.world:getCeilingFillColor()
+    local gray, alpha = self:_getCeilingFillColor()
+    return mode7.color.grayscale.new(gray, alpha)
+end
+
+--- Sets the ceiling color to be used for the out-of-bounds space.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-setCeilingFillColor
+---@param color mode7.color
+function mode7.world:setCeilingFillColor(color)
+    self:_setCeilingFillColor(color.gray, color.alpha)
+end
+
 -- Display
 
 mode7.display.kScale1x1 = 0
@@ -84,6 +101,11 @@ mode7.display.kOrientationLandscapeLeft = 0
 mode7.display.kOrientationLandscapeRight = 1
 mode7.display.kOrientationPortrait = 2
 mode7.display.kOrientationPortraitUpsideDown = 3
+
+mode7.display.kFlipModeNone = 0
+mode7.display.kFlipModeX = 1
+mode7.display.kFlipModeY = 2
+mode7.display.kFlipModeXY = 3
 
 -- Sprite
 
