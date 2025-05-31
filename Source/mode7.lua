@@ -97,6 +97,10 @@ mode7.display.kScale2x2 = 2
 mode7.display.kScale4x1 = 3
 mode7.display.kScale4x2 = 4
 
+mode7.display.kDitherBayer2x2 = 0
+mode7.display.kDitherBayer4x4 = 1
+mode7.display.kDitherBayer8x8 = 2
+
 mode7.display.kOrientationLandscapeLeft = 0
 mode7.display.kOrientationLandscapeRight = 1
 mode7.display.kOrientationPortrait = 2
@@ -121,13 +125,65 @@ mode7.sprite.kAlignmentOdd = 2
 mode7.sprite.kBillboardSizeAutomatic = 0
 mode7.sprite.kBillboardSizeCustom = 1
 
+mode7.sprite.kVisibilityModeDefault = 0
+mode7.sprite.kVisibilityModeShader = 1
+
 -- Bitmap
 
+--- Creates a new bitmap filled with bgColor.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-new
+---@param width integer
+---@param height integer
+---@param bgColor mode7.color
+---@return mode7.bitmap
+mode7.bitmap.new = function(width, height, bgColor)
+    return mode7.bitmap._new(width, height, bgColor.gray, bgColor.alpha)
+end
+
+--- Gets the color value at the given position
+---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-colorAt
 ---@param x integer
 ---@param y integer
 ---@return mode7.color
 function mode7.bitmap:colorAt(x, y)
     local gray, alpha = self:_colorAt(x, y)
+    return mode7.color.grayscale.new(gray, alpha)
+end
+
+-- Shader
+
+--- Sets the shader color. Alpha is supported.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-setColor
+---@param color mode7.color
+function mode7.shader.linear:setColor(color)
+    self:_setColor(color.gray, color.alpha)
+end
+
+--- Gets the shader color.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-getColor
+---@return mode7.color
+function mode7.shader.linear:getColor()
+    local gray, alpha = self:_getColor()
+    return mode7.color.grayscale.new(gray, alpha)
+end
+
+--- Sets the shader color. Alpha is supported.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-setColor
+---@param color mode7.color
+function mode7.shader.radial:setColor(color)
+    self:_setColor(color.gray, color.alpha)
+end
+
+--- Gets the shader color.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-getColor
+---@return mode7.color
+function mode7.shader.radial:getColor()
+    local gray, alpha = self:_getColor()
     return mode7.color.grayscale.new(gray, alpha)
 end

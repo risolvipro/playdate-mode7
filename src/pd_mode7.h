@@ -12,7 +12,11 @@
 #include <pd_api.h>
 
 #ifndef PD_MODE7_CEILING
-#define PD_MODE7_CEILING 0
+#define PD_MODE7_CEILING 1
+#endif
+
+#ifndef PD_MODE7_SHADER
+#define PD_MODE7_SHADER 1
 #endif
 
 typedef struct PDMode7_Vec2 {
@@ -60,6 +64,12 @@ typedef enum {
 } PDMode7_DisplayFlipMode;
 
 typedef enum {
+    kMode7DitherBayer2x2 = 0,
+    kMode7DitherBayer4x4 = 1,
+    kMode7DitherBayer8x8 = 2
+} PDMode7_DitherType;
+
+typedef enum {
     kMode7SpriteDataSourceFrame,
     kMode7SpriteDataSourceAngle,
     kMode7SpriteDataSourcePitch,
@@ -77,13 +87,10 @@ typedef enum {
     kMode7BillboardSizeCustom
 } PDMode7_SpriteBillboardSizeBehavior;
 
-typedef struct PDMode7_Bitmap {
-    void *prv;
-} PDMode7_Bitmap;
-
-typedef struct PDMode7_BitmapLayer {
-    void *prv;
-} PDMode7_BitmapLayer;
+typedef enum {
+    kMode7SpriteVisibilityModeDefault,
+    kMode7SpriteVisibilityModeShader
+} PDMode7_SpriteVisibilityMode;
 
 typedef struct PDMode7_WorldConfiguration {
     float width;
@@ -92,33 +99,18 @@ typedef struct PDMode7_WorldConfiguration {
     int gridCellSize;
 } PDMode7_WorldConfiguration;
 
-typedef struct PDMode7_World {
-    void *prv;
-} PDMode7_World;
-
-typedef struct PDMode7_Background {
-    void *prv;
-} PDMode7_Background;
-
-typedef struct PDMode7_Display {
-    void *prv;
-} PDMode7_Display;
-
-typedef struct PDMode7_Camera {
-    void *prv;
-} PDMode7_Camera;
-
-typedef struct {
-    void *prv;
-} PDMode7_SpriteDataSource;
-
-typedef struct PDMode7_Sprite {
-    void *prv;
-} PDMode7_Sprite;
-
-typedef struct {
-    void *prv;
-} PDMode7_SpriteInstance;
+typedef struct PDMode7_World PDMode7_World;
+typedef struct PDMode7_Bitmap PDMode7_Bitmap;
+typedef struct PDMode7_BitmapLayer PDMode7_BitmapLayer;
+typedef struct PDMode7_Background PDMode7_Background;
+typedef struct PDMode7_Display PDMode7_Display;
+typedef struct PDMode7_Camera PDMode7_Camera;
+typedef struct PDMode7_SpriteDataSource PDMode7_SpriteDataSource;
+typedef struct PDMode7_Sprite PDMode7_Sprite;
+typedef struct PDMode7_SpriteInstance PDMode7_SpriteInstance;
+typedef struct PDMode7_Shader PDMode7_Shader;
+typedef struct PDMode7_LinearShader PDMode7_LinearShader;
+typedef struct PDMode7_RadialShader PDMode7_RadialShader;
 
 typedef void(PDMode7_SpriteDrawCallbackFunction)(PDMode7_SpriteInstance *instance, LCDBitmap *bitmap, PDMode7_Rect rect, void(*drawSprite)(PDMode7_SpriteInstance *instance));
 
@@ -195,6 +187,13 @@ typedef struct PDMode7_Display_API {
     PDMode7_Background*(*getBackground)(PDMode7_Display *display);
     PDMode7_DisplayScale(*getScale)(PDMode7_Display *display);
     void(*setScale)(PDMode7_Display *display, PDMode7_DisplayScale scale);
+    PDMode7_DitherType(*getDitherType)(PDMode7_Display *display);
+    void(*setDitherType)(PDMode7_Display *display, PDMode7_DitherType type);
+    void(*setPlaneShader)(PDMode7_Display *display, PDMode7_Shader *shader);
+    PDMode7_Shader*(*getPlaneShader)(PDMode7_Display *display);
+    void(*setCeilingShader)(PDMode7_Display *display, PDMode7_Shader *shader);
+    PDMode7_Shader*(*getCeilingShader)(PDMode7_Display *display);
+    PDMode7_Shader*(*getShader)(void);
     int(*getHorizon)(PDMode7_Display *display);
     float(*pitchForHorizon)(PDMode7_Display *display, float horizon);
     PDMode7_Vec2(*convertPointFromOrientation)(PDMode7_Display *display, float x, float y);
@@ -202,6 +201,39 @@ typedef struct PDMode7_Display_API {
     PDMode7_World*(*getWorld)(PDMode7_Display *display);
     void(*removeFromWorld)(PDMode7_Display *display);
 } PDMode7_Display_API;
+
+typedef struct PDMode7_LinearShader_API {
+    PDMode7_LinearShader*(*newLinear)(void);
+    float(*getMinimumDistance)(PDMode7_LinearShader *linear);
+    void(*setMinimumDistance)(PDMode7_LinearShader *linear, float distance);
+    float(*getMaximumDistance)(PDMode7_LinearShader *linear);
+    void(*setMaximumDistance)(PDMode7_LinearShader *linear, float distance);
+    PDMode7_Color(*getColor)(PDMode7_LinearShader *linear);
+    void(*setColor)(PDMode7_LinearShader *linear, PDMode7_Color color);
+    int(*getInverted)(PDMode7_LinearShader *linear);
+    void(*setInverted)(PDMode7_LinearShader *linear, int inverted);
+    void(*freeLinear)(PDMode7_LinearShader *linear);
+} PDMode7_LinearShader_API;
+
+typedef struct PDMode7_RadialShader_API {
+    PDMode7_RadialShader*(*newRadial)(void);
+    float(*getMinimumDistance)(PDMode7_RadialShader *radial);
+    void(*setMinimumDistance)(PDMode7_RadialShader *radial, float distance);
+    float(*getMaximumDistance)(PDMode7_RadialShader *radial);
+    void(*setMaximumDistance)(PDMode7_RadialShader *radial, float distance);
+    PDMode7_Vec2(*getOffset)(PDMode7_RadialShader *radial);
+    void(*setOffset)(PDMode7_RadialShader *radial, float dx, float dy);
+    PDMode7_Color(*getColor)(PDMode7_RadialShader *radial);
+    void(*setColor)(PDMode7_RadialShader *radial, PDMode7_Color color);
+    int(*getInverted)(PDMode7_RadialShader *radial);
+    void(*setInverted)(PDMode7_RadialShader *radial, int inverted);
+    void(*freeRadial)(PDMode7_RadialShader *radial);
+} PDMode7_RadialShader_API;
+
+typedef struct PDMode7_Shader_API {
+    PDMode7_LinearShader_API *linear;
+    PDMode7_RadialShader_API *radial;
+} PDMode7_Shader_API;
 
 typedef struct PDMode7_SpriteDataSource_API {
     void(*setMaximumWidth)(PDMode7_Sprite *sprite, int maximumWidth);
@@ -222,6 +254,7 @@ typedef struct PDMode7_Sprite_API {
     float(*getPitch)(PDMode7_Sprite *sprite);
     void(*setPitch)(PDMode7_Sprite *sprite, float pitch);
     void(*setVisible)(PDMode7_Sprite *sprite, int flag);
+    void(*setVisibilityMode)(PDMode7_Sprite *sprite, PDMode7_SpriteVisibilityMode mode);
     void(*setImageCenter)(PDMode7_Sprite *sprite, float cx, float cy);
     void(*setRoundingIncrement)(PDMode7_Sprite *sprite, unsigned int x, unsigned int y);
     void(*setAlignment)(PDMode7_Sprite *sprite, PDMode7_SpriteAlignment alignmentX, PDMode7_SpriteAlignment alignmentY);
@@ -253,6 +286,8 @@ typedef struct PDMode7_SpriteInstance_API {
     PDMode7_SpriteDataSource*(*getDataSource)(PDMode7_SpriteInstance *instance);
     int(*isVisible)(PDMode7_SpriteInstance *instance);
     void(*setVisible)(PDMode7_SpriteInstance *instance, int flag);
+    void(*setVisibilityMode)(PDMode7_SpriteInstance *instance, PDMode7_SpriteVisibilityMode mode);
+    PDMode7_SpriteVisibilityMode(*getVisibilityMode)(PDMode7_SpriteInstance *instance);
     PDMode7_Vec2(*getImageCenter)(PDMode7_SpriteInstance *instance);
     void(*setImageCenter)(PDMode7_SpriteInstance *instance, float cx, float cy);
     void(*getRoundingIncrement)(PDMode7_SpriteInstance *instance, unsigned int *x, unsigned int *y);
@@ -306,11 +341,13 @@ typedef struct PDMode7_BitmapLayer_API {
 } PDMode7_BitmapLayer_API;
 
 typedef struct PDMode7_Bitmap_API {
+    PDMode7_Bitmap*(*newBitmap)(int width, int height, PDMode7_Color bgColor);
     PDMode7_Bitmap*(*loadPGM)(const char *filename);
     void(*getSize)(PDMode7_Bitmap *bitmap, int *width, int *height);
     PDMode7_Color(*colorAt)(PDMode7_Bitmap *bitmap, int x, int y);
     PDMode7_Bitmap*(*getMask)(PDMode7_Bitmap *bitmap);
     void(*setMask)(PDMode7_Bitmap *bitmap, PDMode7_Bitmap *mask);
+    void(*drawInto)(PDMode7_Bitmap *bitmap, PDMode7_Bitmap *target, int x, int y);
     void(*addLayer)(PDMode7_Bitmap *bitmap, PDMode7_BitmapLayer *layer);
     PDMode7_BitmapLayer**(*getLayers)(PDMode7_Bitmap *bitmap, int *length);
     void(*removeAllLayers)(PDMode7_Bitmap *bitmap);
@@ -331,6 +368,7 @@ typedef struct PDMode7_API {
     PDMode7_Vec3_API *vec3;
     PDMode7_Color_API *color;
     PDMode7_Rect_API *rect;
+    PDMode7_Shader_API *shader;
 } PDMode7_API;
 
 extern PDMode7_API *mode7;

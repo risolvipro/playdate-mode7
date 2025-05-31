@@ -54,7 +54,14 @@ function newWorld()
     bitmap:addLayer(coinLayer1)
     bitmap:addLayer(coinLayer2)
     --]]
-    
+
+    --[[
+    local shader = mode7.shader.linear.new()
+    shader:setMinimumDistance(50)
+    shader:setMaximumDistance(400)
+    display:setPlaneShader(shader)
+    --]]
+
     return world
 end
 
@@ -65,7 +72,8 @@ function addCar(world, imageTable, x, y, z)
     car:setImageCenter(0.5, 0.3)
     car:setAngle(math.rad(-90))
     car:setAlignment(mode7.sprite.kAlignmentOdd, mode7.sprite.kAlignmentOdd)
-    
+    car:setVisibilityMode(mode7.sprite.kVisibilityModeShader)
+
     local dataSource = car:getDataSource()
 
     dataSource:setMinimumWidth(4)

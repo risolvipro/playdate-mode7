@@ -20,6 +20,9 @@ mode7.world.configuration = {}
 ---@field kOrientationLandscapeRight integer 1
 ---@field kOrientationPortrait integer 2
 ---@field kOrientationPortraitUpsideDown integer 3
+---@field kDitherBayer2x2 integer 0
+---@field kDitherBayer4x4 integer 1
+---@field kDitherBayer8x8 integer 2
 mode7.display = {}
 
 ---@class mode7.background
@@ -43,6 +46,8 @@ mode7.camera = {}
 ---@field kAlignmentOdd integer 2
 ---@field kBillboardSizeAutomatic integer 0
 ---@field kBillboardSizeCustom integer 1
+---@field kVisibilityModeDefault integer 0
+---@field kVisibilityModeShader integer 1
 mode7.sprite = {}
 
 ---@class mode7.sprite.datasource
@@ -91,11 +96,43 @@ function mode7.world:_setCeilingFillColor(gray, alpha) end
 ---@return integer alpha
 function mode7.world:_getCeilingFillColor() return 0, 0 end
 
+---@param width integer
+---@param height integer
+---@param gray integer
+---@param alpha integer
+---@return mode7.bitmap
+function mode7.bitmap._new(width, height, gray, alpha) return mode7.bitmap end
+
 ---@param x integer
 ---@param y integer
 ---@return integer gray
 ---@return integer alpha
 function mode7.bitmap:_colorAt(x, y) return 0, 0 end
+
+---@class mode7.shader
+mode7.shader = {}
+
+---@class mode7.shader.linear: mode7.shader
+mode7.shader.linear = {}
+
+---@param gray integer
+---@param alpha integer
+function mode7.shader.linear:_setColor(gray, alpha) end
+
+---@return integer gray
+---@return integer alpha
+function mode7.shader.linear:_getColor() return 0, 0 end
+
+---@class mode7.shader.radial: mode7.shader
+mode7.shader.radial = {}
+
+---@param gray integer
+---@param alpha integer
+function mode7.shader.radial:_setColor(gray, alpha) end
+
+---@return integer gray
+---@return integer alpha
+function mode7.shader.radial:_getColor() return 0, 0 end
 
 --- Returns the world size.
 ---
@@ -309,6 +346,18 @@ function mode7.display:setScale(scale) end
 ---@return integer
 function mode7.display:getScale() return 0 end
 
+--- Sets the dither type for the plane.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-setDitherType
+---@param type integer
+function mode7.display:setDitherType(type) end
+
+--- Gets the dither type for the plane.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getDitherType
+---@return integer
+function mode7.display:getDitherType() return 0 end
+
 --- Returns the background interface associated to the display.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getBackground
@@ -344,6 +393,30 @@ function mode7.display:convertPointFromOrientation(x, y) return 0, 0 end
 ---@return number x
 ---@return number y
 function mode7.display:convertPointToOrientation(x, y) return 0, 0 end
+
+--- Sets the plane shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-setPlaneShader
+---@param shader mode7.shader
+function mode7.display:setPlaneShader(shader) end
+
+--- Gets the plane shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getPlaneShader
+---@return mode7.shader
+function mode7.display:getPlaneShader() return {} end
+
+--- Sets the ceiling shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-setCeilingShader
+---@param shader mode7.shader
+function mode7.display:setCeilingShader(shader) end
+
+--- Gets the ceiling shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-display-getCeilingShader
+---@return mode7.shader
+function mode7.display:getCeilingShader() return {} end
 
 --- Returns the world associated to the display.
 ---
@@ -388,7 +461,7 @@ function mode7.background:setRoundingIncrement(x, y) end
 ---@return number y
 function mode7.background:getRoundingIncrement() return 0, 0 end
 
---- Sets the background center (0.0 - 1.0). Default value is (0.5, 0.5) so that the background is centered when the camera angle is 0.
+--- Sets the background center (0.0 - 1.0). Default value is (0.5, 0.5) so that the background is aligned horizontally to the center of the display (camera angle = 0), and it's aligned vertically to the horizon.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-background-setCenter
 ---@param cx number
@@ -431,6 +504,14 @@ function mode7.bitmap:setMask(mask) end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-getMask
 ---@return mode7.bitmap mask
 function mode7.bitmap:getMask() return {} end
+
+--- Draws a bitmap into another bitmap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-drawInto
+---@param target mode7.bitmap
+---@param x number
+---@param y number
+function mode7.bitmap:drawInto(target, x, y) end
 
 --- Adds a layer to the bitmap.
 ---
@@ -503,6 +584,104 @@ function mode7.bitmap.layer:invalidate() end
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmapLayer-removeFromBitmap
 function mode7.bitmap.layer:removeFromBitmap() end
+
+--- Creates a new linear shader. This shader draws a linear gradient from the minimum distance (transparent) to the maximum distance (opaque).
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-new
+---@return mode7.shader.linear
+function mode7.shader.linear.new() return {} end
+
+--- Sets the minimum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-setMinimumDistance
+---@param distance number
+function mode7.shader.linear:setMinimumDistance(distance) end
+
+--- Gets the minimum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-getMinimumDistance
+---@return number
+function mode7.shader.linear:getMinimumDistance() return 0 end
+
+--- Sets the maximum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-setMaximumDistance
+---@param distance number
+function mode7.shader.linear:setMaximumDistance(distance) end
+
+--- Gets the maximum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-getMaximumDistance
+---@return number
+function mode7.shader.linear:getMaximumDistance() return 0 end
+
+--- Sets the the inverted flag of the shader. When set to true, the final alpha value is inverted.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-setInverted
+---@param inverted boolean
+function mode7.shader.linear:setInverted(inverted) end
+
+--- Gets the inverted flag of the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-linear-getInverted
+---@return boolean
+function mode7.shader.linear:getInverted() return false end
+
+--- Creates a new radial shader. This shader draws a radial gradient from the minimum distance (transparent) to the maximum distance (opaque).
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-new
+---@return mode7.shader.radial
+function mode7.shader.radial.new() return {} end
+
+--- Sets the minimum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-setMinimumDistance
+---@param distance number
+function mode7.shader.radial:setMinimumDistance(distance) end
+
+--- Gets the minimum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-getMinimumDistance
+---@return number
+function mode7.shader.radial:getMinimumDistance() return 0 end
+
+--- Sets the maximum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-setMaximumDistance
+---@param distance number
+function mode7.shader.radial:setMaximumDistance(distance) end
+
+--- Gets the maximum distance for the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-getMaximumDistance
+---@return number
+function mode7.shader.radial:getMaximumDistance() return 0 end
+
+--- Sets the gradient offset in world coordinates.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-setOffset
+---@param dx number
+---@param dy number
+function mode7.shader.radial:setOffset(dx, dy) end
+
+--- Gets the gradient offset.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-getOffset
+---@return number dx
+---@return number dy
+function mode7.shader.radial:getOffset() return 0, 0 end
+
+--- Sets the the inverted flag of the shader. When set to true, the final alpha value is inverted.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-setInverted
+---@param inverted boolean
+function mode7.shader.radial:setInverted(inverted) end
+
+--- Gets the inverted flag of the shader.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-getInverted
+---@return boolean
+function mode7.shader.radial:getInverted() return false end
 
 --- Resize the pool to the given size in bytes. We recommend to call this function only once.
 ---

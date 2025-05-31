@@ -80,6 +80,11 @@ PDMode7_World *newWorld(void)
     //mode7->display->setOrientation(display, kMode7DisplayOrientationPortrait);
     //mode7->camera->setFOV(camera, M_PI_2 / 2);
     
+    //PDMode7_LinearShader *shader = mode7->shader->linear->newLinear();
+    //mode7->shader->linear->setMinimumDistance(shader, 40);
+    //mode7->shader->linear->setMaximumDistance(shader, 200);
+    //mode7->display->setPlaneShader(display, shader);
+    
     backgroundImage = playdate->graphics->loadBitmap("images/background", NULL);
 
     PDMode7_Background *background = mode7->display->getBackground(display);
