@@ -194,6 +194,12 @@ section h2 {
     margin-bottom: 0px !important;
 }
 
+.subsection {
+    font-size: 1.3em;
+    margin-bottom: 0.5em;
+    margin-top: 1.5em;
+}
+
 .definition {
     scroll-margin-top: 20px;
     margin-bottom: 14px;
