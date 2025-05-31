@@ -12,11 +12,11 @@
 #include <pd_api.h>
 
 #ifndef PD_MODE7_CEILING
-#define PD_MODE7_CEILING 1
+#define PD_MODE7_CEILING 0
 #endif
 
 #ifndef PD_MODE7_SHADER
-#define PD_MODE7_SHADER 1
+#define PD_MODE7_SHADER 0
 #endif
 
 typedef struct PDMode7_Vec2 {
