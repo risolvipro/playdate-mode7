@@ -2453,6 +2453,24 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                                                                                                     <div class="definition-block definition-note last"><p>See also <a class="definition-link" href="#def-spriteInstance-setVisible">spriteInstance->setVisible</a></p></div>
                                                                     </div>
                             </div>
+                                                                                                            <div id="def-sprite-setVisibilityMode" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->sprite->setVisibilityMode(PDMode7_Sprite *sprite, PDMode7_SpriteVisibilityMode mode);</span><a href="C-API.html#def-sprite-setVisibilityMode" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-sprite-setVisibilityMode"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-sprite-setVisibilityMode">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.sprite:setVisibilityMode(visible)</span><a href="Lua-API.html#def-sprite-setVisibilityMode" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the visibility mode for all the instances.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>See also <a class="definition-link" href="#def-spriteInstance-setVisibilityMode">void mode7->spriteInstance->setVisibilityMode(PDMode7_SpriteInstance *instance, PDMode7_SpriteVisibilityMode mode);</a></p></div>
+                                                                    </div>
+                            </div>
                                                                                                             <div id="def-sprite-setImageCenter" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
@@ -3055,6 +3073,44 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Gets the billboard custom size.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-spriteInstance-setVisibilityMode" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->spriteInstance->setVisibilityMode(PDMode7_SpriteInstance *instance, PDMode7_SpriteVisibilityMode mode);</span><a href="C-API.html#def-spriteInstance-setVisibilityMode" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-setVisibilityMode"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-spriteInstance-setVisibilityMode">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.spriteInstance:setVisibilityMode(mode)</span><a href="Lua-API.html#def-spriteInstance-setVisibilityMode" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets the visibility mode. If mode is set to <i>shader</i>, the sprite visibility is controlled by the shader (E.g. In dark areas, the sprite is invisibile).</p></div>
+                                                                                                                    <div class="definition-block definition-code last"><pre class="code inline no-margins">typedef enum {
+   kMode7SpriteVisibilityModeDefault,
+   kMode7SpriteVisibilityModeShader,
+} PDMode7_SpriteVisibilityMode;</pre></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-spriteInstance-getVisibilityMode" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_SpriteVisibilityMode mode7->spriteInstance->getVisibilityMode(PDMode7_SpriteInstance *instance);</span><a href="C-API.html#def-spriteInstance-getVisibilityMode" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-spriteInstance-getVisibilityMode"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-spriteInstance-getVisibilityMode">
+                                            <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.spriteInstance:getVisibilityMode() <span class="definition-return-type">mode7.sprite.kVisibilityMode</span></span><a href="Lua-API.html#def-spriteInstance-getVisibilityMode" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the visibility mode.</p></div>
                                                                     </div>
                             </div>
                                                                                                             <div id="def-spriteInstance-getBitmap" class="definition" definition>
