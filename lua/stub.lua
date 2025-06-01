@@ -856,6 +856,12 @@ function mode7.sprite:setFrame(frame) end
 ---@param visible boolean
 function mode7.sprite:setVisible(visible) end
 
+--- Sets the visibility mode for all the instances.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-setVisibilityMode
+---@param mode integer
+function mode7.sprite:setVisibilityMode(mode) end
+
 --- Sets the image center for all the instances.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-sprite-setImageCenter
@@ -1068,6 +1074,18 @@ function mode7.sprite.instance:getBillboardSizeBehavior() return 0 end
 ---@return number width
 ---@return number height
 function mode7.sprite.instance:getBillboardSize() return 0, 0 end
+
+--- Sets the visibility mode. If mode is set to shader, the sprite visibility is controlled by the shader (E.g. In dark areas, the sprite is invisibile).
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-setVisibilityMode
+---@param type integer
+function mode7.spriteInstance:setVisibilityMode(type) end
+
+--- Gets the visibility mode.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-spriteInstance-getVisibilityMode
+---@return integer
+function mode7.spriteInstance:getVisibilityMode() return 0 end
 
 --- It returns the visible image for the instance.
 ---

@@ -72,8 +72,7 @@ function addCar(world, imageTable, x, y, z)
     car:setImageCenter(0.5, 0.3)
     car:setAngle(math.rad(-90))
     car:setAlignment(mode7.sprite.kAlignmentOdd, mode7.sprite.kAlignmentOdd)
-    car:setVisibilityMode(mode7.sprite.kVisibilityModeShader)
-
+    
     local dataSource = car:getDataSource()
 
     dataSource:setMinimumWidth(4)
