@@ -3609,20 +3609,21 @@ static int pgm_scan_int(pgm_buffer *buffer, int *n)
 
 static void pgm_skip_comments(pgm_buffer *buffer)
 {
-    int ch;
-    
     // Skip spaces
-    while(isspace(ch = buffer->data[buffer->position]))
+    while(isspace((int)buffer->data[buffer->position]))
     {
         buffer->position++;
     }
     
-    while((ch = buffer->data[buffer->position]) == '#')
+    while(buffer->data[buffer->position] == '#')
     {
         buffer->position++;
-        while((ch = pgm_getc(buffer)) != '\n' && ch != EOF);
+        while(buffer->data[buffer->position] != '\n' && buffer->data[buffer->position] != EOF)
+        {
+            buffer->position++;
+        }
         // Skip spaces
-        while(isspace(ch = buffer->data[buffer->position]))
+        while(isspace((int)buffer->data[buffer->position]))
         {
             buffer->position++;
         }
@@ -6409,7 +6410,7 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->shader->linear->setInverted = linearShaderSetInverted; // LUACHECK
     mode7->shader->linear->freeLinear = freeLinearShader; // LUACHECK
     
-    mode7->shader->radial = playdate->system->realloc(NULL, sizeof(PDMode7_LinearShader_API));
+    mode7->shader->radial = playdate->system->realloc(NULL, sizeof(PDMode7_RadialShader_API));
     mode7->shader->radial->newRadial = newRadialShader; // LUACHECK
     mode7->shader->radial->getMinimumDistance = radialShaderGetMinimumDistance; // LUACHECK
     mode7->shader->radial->setMinimumDistance = radialShaderSetMinimumDistance; // LUACHECK
