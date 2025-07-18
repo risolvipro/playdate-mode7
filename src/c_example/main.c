@@ -27,6 +27,8 @@ static LCDBitmapTable *carTable;
 static PDMode7_Bitmap *bitmap;
 static PDMode7_Sprite *sprite;
 static LCDBitmap *backgroundImage;
+static PDMode7_Tilemap *tilemap;
+static PDMode7_Bitmap *tileBitmap;
 
 #ifdef _WINDLL
 __declspec(dllexport)
@@ -68,6 +70,21 @@ PDMode7_World *newWorld(void)
     configuration.depth = 2048;
     
     world = mode7->world->newWorld(configuration);
+    
+    /*
+    tilemap = mode7->world->newTilemap(world, 64, 64);
+    mode7->world->setPlaneTilemap(world, tilemap);
+    
+    tileBitmap = mode7->bitmap->loadPGM("images/tile.pgm");
+    mode7->tilemap->setBitmapAtRange(tilemap, tileBitmap, 0, 0, -1, -1);
+    
+    int *indexes = (int[2]){
+        16 * 32 + 3, 16 * 32 + 4
+    };
+    
+    PDMode7_Bitmap *tileBitmap1 = mode7->bitmap->loadPGM("images/tile1.pgm");
+    mode7->tilemap->setBitmapAtIndexes(tilemap, tileBitmap1, indexes, 2);
+     */
     
     bitmap = mode7->bitmap->loadPGM("images/track-0.pgm");
     mode7->world->setPlaneBitmap(world, bitmap);
@@ -130,7 +147,7 @@ static int update(void *userdata)
     PDMode7_Vec3 position = mode7->camera->getPosition(camera);
     
     float angleDelta = 1 * dt;
-
+    
     if(pressed & kButtonLeft)
     {
         angle -= angleDelta;
@@ -188,6 +205,14 @@ void restartWorld(void)
     if(sprite)
     {
         mode7->sprite->freeSprite(sprite);
+    }
+    if(tilemap)
+    {
+        mode7->tilemap->freeTilemap(tilemap);
+    }
+    if(tileBitmap)
+    {
+        mode7->bitmap->freeBitmap(tileBitmap);
     }
     
     playdate->graphics->freeBitmap(backgroundImage);

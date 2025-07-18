@@ -65,6 +65,9 @@ mode7.image = {}
 ---@class mode7.imagetable
 mode7.imagetable = {}
 
+---@class mode7.tilemap
+mode7.tilemap = {}
+
 ---@class mode7.array
 mode7.array = {}
 
@@ -95,6 +98,18 @@ function mode7.world:_setCeilingFillColor(gray, alpha) end
 ---@return integer gray
 ---@return integer alpha
 function mode7.world:_getCeilingFillColor() return 0, 0 end
+
+---@param x integer
+---@param y integer
+---@return integer gray
+---@return integer alpha
+function mode7.world:_planeColorAt(x, y) return 0, 0 end
+
+---@param x integer
+---@param y integer
+---@return integer gray
+---@return integer alpha
+function mode7.world:_ceilingColorAt(x, y) return 0, 0 end
 
 ---@param width integer
 ---@param height integer
@@ -171,6 +186,30 @@ function mode7.world:setCeilingBitmap(bitmap) end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getCeilingBitmap
 ---@return mode7.bitmap
 function mode7.world:getCeilingBitmap() return {} end
+
+--- Sets a tilemap for the plane.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-setPlaneTilemap
+---@param tilemap mode7.tilemap
+function mode7.world:setPlaneTilemap(tilemap) end
+
+--- Gets the plane tilemap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getPlaneTilemap
+---@return mode7.tilemap
+function mode7.world:getPlaneTilemap() return {} end
+
+--- Sets a tilemap for the ceiling.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-setCeilingTilemap
+---@param tilemap mode7.tilemap
+function mode7.world:setCeilingTilemap(tilemap) end
+
+--- Gets the ceiling tilemap.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-getCeilingTilemap
+---@return mode7.tilemap
+function mode7.world:getCeilingTilemap() return {} end
 
 --- Converts a world point to a display point. The z component of the returned value is 1 if the point is in front of the camera or -1 if the point is behind the camera.
 ---
@@ -484,6 +523,13 @@ function mode7.background:getCenter() return 0, 0 end
 ---@return mode7.bitmap
 function mode7.bitmap.loadPGM(path) return {} end
 
+--- Returns a copy of the bitmap. The mask, if it exists, is copied too.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-copy
+---@param bitmap mode7.bitmap
+---@return mode7.bitmap
+function mode7.bitmap:copy(bitmap) return {} end
+
 --- Gets the bitmap size.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-bitmap-getSize
@@ -682,6 +728,52 @@ function mode7.shader.radial:setInverted(inverted) end
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-shader-radial-getInverted
 ---@return boolean
 function mode7.shader.radial:getInverted() return false end
+
+--- Creates new tilemap from world. tileWidth and tileHeight values must be a power of 2.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-newTilemap
+---@param tileWidth number
+---@param tileHeight number
+---@return mode7.tilemap
+function mode7.world:newTilemap(tileWidth, tileHeight) return {} end
+
+--- Sets a bitmap at the specified position. Row and column start at 0.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-tilemap-setBitmapAtPosition
+---@param bitmap mode7.bitmap
+---@param row number
+---@param column number
+function mode7.tilemap:setBitmapAtPosition(bitmap, row, column) end
+
+--- Sets a bitmap at the specified range (from start position to end position). Row and column start at 0, pass -1 as endRow or endColumn to express the highest row or column in the grid. For example, (0, 0, -1, -1) will set the bitmap to the entire grid.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-tilemap-setBitmapAtRange
+---@param bitmap mode7.bitmap
+---@param startRow number
+---@param startColumn number
+---@param endRow number
+---@param endColumn number
+function mode7.tilemap:setBitmapAtRange(bitmap, startRow, startColumn, endRow, endColumn) end
+
+--- Gets the bitmap at the specified position.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-tilemap-getBitmapAtPosition
+---@param row number
+---@param column number
+---@return mode7.bitmap
+function mode7.tilemap:getBitmapAtPosition(row, column) return {} end
+
+--- Sets a bitmap to be used for the out-of-bounds space.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-tilemap-setFillBitmap
+---@param bitmap mode7.bitmap
+function mode7.tilemap:setFillBitmap(bitmap) end
+
+--- Gets a bitmap to be used for the out-of-bounds space.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-tilemap-setFillBitmap
+---@return mode7.bitmap
+function mode7.tilemap:getFillBitmap() return {} end
 
 --- Resize the pool to the given size in bytes. We recommend to call this function only once.
 ---

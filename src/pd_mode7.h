@@ -19,6 +19,10 @@
 #define PD_MODE7_SHADER 0
 #endif
 
+#ifndef PD_MODE7_TILEMAP
+#define PD_MODE7_TILEMAP 0
+#endif
+
 typedef struct PDMode7_Vec2 {
     float x, y;
 } PDMode7_Vec2;
@@ -111,6 +115,7 @@ typedef struct PDMode7_SpriteInstance PDMode7_SpriteInstance;
 typedef struct PDMode7_Shader PDMode7_Shader;
 typedef struct PDMode7_LinearShader PDMode7_LinearShader;
 typedef struct PDMode7_RadialShader PDMode7_RadialShader;
+typedef struct PDMode7_Tilemap PDMode7_Tilemap;
 
 typedef void(PDMode7_SpriteDrawCallbackFunction)(PDMode7_SpriteInstance *instance, LCDBitmap *bitmap, PDMode7_Rect rect, void(*drawSprite)(PDMode7_SpriteInstance *instance));
 
@@ -126,14 +131,21 @@ typedef struct PDMode7_World_API {
     float(*getScale)(PDMode7_World *world);
     PDMode7_Display*(*getMainDisplay)(PDMode7_World *world);
     PDMode7_Camera*(*getMainCamera)(PDMode7_World *world);
+    PDMode7_Color(*planeColorAt)(PDMode7_World *world, int x, int y);
+    PDMode7_Color(*ceilingColorAt)(PDMode7_World *world, int x, int y);
     void(*setPlaneBitmap)(PDMode7_World *world, PDMode7_Bitmap *bitmap);
     PDMode7_Bitmap*(*getPlaneBitmap)(PDMode7_World *world);
-    PDMode7_Color(*getPlaneFillColor)(PDMode7_World *world);
     void(*setPlaneFillColor)(PDMode7_World *world, PDMode7_Color color);
+    PDMode7_Color(*getPlaneFillColor)(PDMode7_World *world);
     void(*setCeilingBitmap)(PDMode7_World *world, PDMode7_Bitmap *bitmap);
     PDMode7_Bitmap*(*getCeilingBitmap)(PDMode7_World *world);
-    PDMode7_Color(*getCeilingFillColor)(PDMode7_World *world);
     void(*setCeilingFillColor)(PDMode7_World *world, PDMode7_Color color);
+    PDMode7_Color(*getCeilingFillColor)(PDMode7_World *world);
+    void(*setPlaneTilemap)(PDMode7_World *world, PDMode7_Tilemap *tilemap);
+    PDMode7_Tilemap*(*getPlaneTilemap)(PDMode7_World *world);
+    void(*setCeilingTilemap)(PDMode7_World *world, PDMode7_Tilemap *tilemap);
+    PDMode7_Tilemap*(*getCeilingTilemap)(PDMode7_World *world);
+    PDMode7_Tilemap*(*newTilemap)(PDMode7_World *world, int tileWidth, int tileHeight);
     PDMode7_Vec3(*worldToDisplayPoint)(PDMode7_World *world, PDMode7_Vec3 point, PDMode7_Display *display);
     PDMode7_Vec3(*displayToPlanePoint)(PDMode7_World *world, int displayX, int displayY, PDMode7_Display *display);
     PDMode7_Vec2(*planeToBitmapPoint)(PDMode7_World *world, float pointX, float pointY);
@@ -234,6 +246,16 @@ typedef struct PDMode7_Shader_API {
     PDMode7_LinearShader_API *linear;
     PDMode7_RadialShader_API *radial;
 } PDMode7_Shader_API;
+
+typedef struct PDMode7_Tilemap_API {
+    void(*setBitmapAtIndexes)(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int *indexes, int len);
+    void(*setBitmapAtPosition)(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int row, int column);
+    void(*setBitmapAtRange)(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int startRow, int startColumn, int endRow, int endColumn);
+    PDMode7_Bitmap*(*getBitmapAtPosition)(PDMode7_Tilemap *tilemap, int row, int column);
+    void(*setFillBitmap)(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap);
+    PDMode7_Bitmap*(*getFillBitmap)(PDMode7_Tilemap *tilemap);
+    void(*freeTilemap)(PDMode7_Tilemap *tilemap);
+} PDMode7_Tilemap_API;
 
 typedef struct PDMode7_SpriteDataSource_API {
     void(*setMaximumWidth)(PDMode7_Sprite *sprite, int maximumWidth);
@@ -343,6 +365,7 @@ typedef struct PDMode7_BitmapLayer_API {
 typedef struct PDMode7_Bitmap_API {
     PDMode7_Bitmap*(*newBitmap)(int width, int height, PDMode7_Color bgColor);
     PDMode7_Bitmap*(*loadPGM)(const char *filename);
+    PDMode7_Bitmap*(*copyBitmap)(PDMode7_Bitmap *bitmap);
     void(*getSize)(PDMode7_Bitmap *bitmap, int *width, int *height);
     PDMode7_Color(*colorAt)(PDMode7_Bitmap *bitmap, int x, int y);
     PDMode7_Bitmap*(*getMask)(PDMode7_Bitmap *bitmap);
@@ -369,6 +392,7 @@ typedef struct PDMode7_API {
     PDMode7_Color_API *color;
     PDMode7_Rect_API *rect;
     PDMode7_Shader_API *shader;
+    PDMode7_Tilemap_API *tilemap;
 } PDMode7_API;
 
 extern PDMode7_API *mode7;

@@ -14,6 +14,7 @@
 
 #define MODE7_MAX_DISPLAYS 4
 #define MODE7_SPRITE_DSOURCE_LEN 4
+#define MODE7_INFINITY_E 0.5f
 
 PDMode7_API *mode7;
 static PlaydateAPI *playdate;
@@ -166,6 +167,24 @@ typedef struct PDMode7_RadialShader {
     float delta_inv;
 } PDMode7_RadialShader;
 
+typedef struct PDMode7_Tile {
+    PDMode7_Bitmap *bitmap;
+    float scaleInv;
+} PDMode7_Tile;
+
+typedef struct PDMode7_Tilemap {
+    int tileWidth;
+    int tileHeight;
+    uint8_t tileWidth_log;
+    uint8_t tileHeight_log;
+    int rows;
+    int columns;
+    PDMode7_Tile *tiles;
+    PDMode7_Bitmap *fillBitmap;
+    float fillBitmapScaleInv;
+    LuaUDObject *luaRef;
+} PDMode7_Tilemap;
+
 typedef struct PDMode7_Background {
     LCDBitmap *bitmap;
     _PDMode7_LuaBitmap *luaBitmap;
@@ -176,6 +195,12 @@ typedef struct PDMode7_Background {
     PDMode7_Display *display;
 } PDMode7_Background;
 
+typedef struct PDMode7_Plane {
+    PDMode7_Bitmap *bitmap;
+    PDMode7_Color fillColor;
+    PDMode7_Tilemap *tilemap;
+} PDMode7_Plane;
+
 typedef struct PDMode7_World {
     int width;
     int height;
@@ -184,10 +209,8 @@ typedef struct PDMode7_World {
     PDMode7_Display* displays[MODE7_MAX_DISPLAYS];
     int numberOfDisplays;
     PDMode7_Camera *mainCamera;
-    PDMode7_Bitmap *planeBitmap;
-    PDMode7_Color planeFillColor;
-    PDMode7_Bitmap *ceilingBitmap;
-    PDMode7_Color ceilingFillColor;
+    PDMode7_Plane plane;
+    PDMode7_Plane ceiling;
     _PDMode7_Array *sprites;
     _PDMode7_Grid *grid;
 } PDMode7_World;
@@ -216,7 +239,7 @@ typedef struct PDMode7_Display {
     PDMode7_Background *background;
     PDMode7_Shader *planeShader;
     PDMode7_Shader *ceilingShader;
-    int isManaged;
+    uint8_t isManaged;
     LuaUDObject *luaRef;
 } PDMode7_Display;
 
@@ -245,7 +268,7 @@ typedef struct PDMode7_Bitmap {
     int height;
     PDMode7_Bitmap *mask;
     _PDMode7_Array *layers;
-    PDMode7_Bitmap *managedMask;
+    uint8_t isManaged;
     uint8_t freeData;
     LuaUDObject *luaRef;
 } PDMode7_Bitmap;
@@ -253,6 +276,7 @@ typedef struct PDMode7_Bitmap {
 typedef struct {
     PDMode7_Vec2 screenRatio;
     float worldScaleInv;
+    float ndc_inf;
     int planeHeight;
     int horizon;
     PDMode7_Vec2 halfFov;
@@ -386,6 +410,7 @@ static inline int mode7_max(const int a, const int b)
 }
 
 static PDMode7_WorldConfiguration defaultWorldConfiguration(void);
+static PDMode7_Plane newPlane(void);
 static PDMode7_Camera* newCamera(void);
 static PDMode7_Display* newDisplay(int x, int y, int width, int height);
 static void displaySetRect(PDMode7_Display *display, int x, int y, int width, int height);
@@ -406,10 +431,10 @@ static inline PDMode7_Vec2ui newVec2ui(unsigned int x, unsigned int y);
 static float worldGetRelativeAngle(PDMode7_Vec3 cameraPoint, float cameraAngle, PDMode7_Vec3 targetPoint, float targetAngle, _PDMode7_Parameters *parameters);
 static float worldGetRelativePitch(PDMode7_Vec3 cameraPoint, float cameraPitch, PDMode7_Vec3 targetPoint, float targetPitch, _PDMode7_Parameters *p);
 static int displayGetHorizon(PDMode7_Display *display);
-static PDMode7_Vec3 displayToPlanePoint(PDMode7_Display *display, int displayX, int displayY, float infValue, _PDMode7_Parameters *p);
+static PDMode7_Vec3 displayToPlanePoint(PDMode7_Display *display, int displayX, int displayY, _PDMode7_Parameters *p);
 static PDMode7_Vec3 worldToDisplayPoint(PDMode7_Display *display, PDMode7_Vec3 point, _PDMode7_Parameters *p);
 static PDMode7_Vec3 displayMultiplierForScanlineAt(PDMode7_Display *display, PDMode7_Vec3 point, _PDMode7_Parameters *p);
-static inline uint8_t worldSampleColor(PDMode7_Bitmap *bitmap, int x, int y, uint8_t fillColor);
+static inline uint8_t planeColorAt(PDMode7_World *world, PDMode7_Plane *plane, int x, int y);
 static inline void worldSetColor(uint8_t color, PDMode7_DisplayScale displayScale, uint8_t *ptr, int rowbytes, _PDMode7_DitherPattern ditherPattern, int bit, int y, int dy);
 #if PD_MODE7_SHADER
 static void shaderPrepare(PDMode7_Shader *pShader, PDMode7_Display *display, _PDMode7_Parameters *p);
@@ -442,6 +467,7 @@ static void gridRemoveSprite(_PDMode7_Grid *grid, PDMode7_Sprite *sprite);
 static void gridUpdateSprite(_PDMode7_Grid *grid, PDMode7_Sprite *sprite);
 static _PDMode7_Array* gridGetSpritesAtPoint(_PDMode7_Grid *grid, PDMode7_Vec3 point, int distanceUnits);
 static void releaseBitmap(PDMode7_Bitmap *bitmap);
+static void freeBitmap(PDMode7_Bitmap *bitmap);
 static void bitmapLayerSetBitmap(PDMode7_BitmapLayer *layer, PDMode7_Bitmap *bitmap);
 static void bitmapLayerDidChange(PDMode7_BitmapLayer *layer);
 static void bitmapLayerDraw(PDMode7_BitmapLayer *layer);
@@ -449,6 +475,7 @@ static void _removeBitmapLayer(PDMode7_BitmapLayer *layer, int restore);
 static void removeBitmapLayer(PDMode7_BitmapLayer *layer);
 static inline float radialShaderProgress(PDMode7_RadialShader *radial, float x, float y);
 static inline float linearShaderProgress(PDMode7_LinearShader *linear, float distance);
+static void releaseTilemap(PDMode7_Tilemap *tilemap);
 static _PDMode7_GCRef* GC_retain(LuaUDObject *luaRef);
 static void GC_release(LuaUDObject *luaRef);
 static _PDMode7_Callback* newCallback_c(void *function);
@@ -467,6 +494,7 @@ static void freeDisplay(PDMode7_Display *display);
 static void releaseShader(PDMode7_Shader *shader);
 static void freeGrid(_PDMode7_Grid *grid);
 static void lua_spriteCallDrawCallback(PDMode7_SpriteInstance *instance);
+static int log2_int(uint32_t n);
 
 static PDMode7_World* worldWithConfiguration(PDMode7_WorldConfiguration configuration)
 {
@@ -479,10 +507,9 @@ static PDMode7_World* worldWithConfiguration(PDMode7_WorldConfiguration configur
     world->mainCamera = newCamera();
     world->mainCamera->isManaged = 1;
     
-    world->planeBitmap = NULL;
-    world->planeFillColor = newGrayscaleColor(255, 255);
-    world->ceilingBitmap = NULL;
-    world->ceilingFillColor = newGrayscaleColor(255, 255);
+    world->plane = newPlane();
+    world->ceiling = newPlane();
+    
     world->sprites = newArray();
     world->numberOfDisplays = 0;
     
@@ -576,6 +603,7 @@ static _PDMode7_Parameters worldGetParameters(PDMode7_Display *display)
     return (_PDMode7_Parameters){
         .screenRatio = newVec2(1.0f / display->rect.width * 2, 1.0f / display->rect.height * 2),
         .worldScaleInv = worldGetScaleInv(pWorld),
+        .ndc_inf = (MODE7_INFINITY_E / display->rect.height),
         .planeHeight = planeHeight,
         .horizon = horizon,
         .halfFov = halfFov,
@@ -584,6 +612,15 @@ static _PDMode7_Parameters worldGetParameters(PDMode7_Display *display)
         .forwardVec = forwardVec,
         .rightVec = rightVec,
         .upVec = upVec
+    };
+}
+
+static PDMode7_Plane newPlane(void)
+{
+    return (PDMode7_Plane){
+        .bitmap = NULL,
+        .fillColor = newGrayscaleColor(255, 255),
+        .tilemap = NULL
     };
 }
 
@@ -895,12 +932,12 @@ static void drawPlane(PDMode7_World *world, PDMode7_Display *display, _PDMode7_P
         int absoluteY = display->rect.y + relativeY;
         
         // Left point for the scanline
-        PDMode7_Vec3 leftPoint = displayToPlanePoint(display, 0, relativeY, -1, parameters);
+        PDMode7_Vec3 leftPoint = displayToPlanePoint(display, 0, relativeY, parameters);
         leftPoint.x *= parameters->worldScaleInv;
         leftPoint.y *= parameters->worldScaleInv;
         
         // Right point for the scanline
-        PDMode7_Vec3 rightPoint = displayToPlanePoint(display, display->rect.width, relativeY, -1, parameters);
+        PDMode7_Vec3 rightPoint = displayToPlanePoint(display, display->rect.width, relativeY, parameters);
         rightPoint.x *= parameters->worldScaleInv;
         rightPoint.y *= parameters->worldScaleInv;
         
@@ -940,16 +977,16 @@ static void drawPlane(PDMode7_World *world, PDMode7_Display *display, _PDMode7_P
             int mapX = floorf(leftPoint.x);
             int mapY = floorf(leftPoint.y);
             
-            uint8_t color = worldSampleColor(world->planeBitmap, mapX, mapY, world->planeFillColor.gray);
+            uint8_t color = planeColorAt(world, &world->plane, mapX, mapY);
 #if PD_MODE7_SHADER
             shaderApply(display->planeShader, &color, leftPoint, parameters);
 #endif
             worldSetColor(color, planeScale, frameStart + frameY + frameX, rowbytes, ditherPattern, bitPosition, absoluteY, 1);
             
 #if PD_MODE7_CEILING
-            if(world->ceilingBitmap && ceilingRelativeY > 0)
+            if((world->ceiling.bitmap || world->ceiling.tilemap) && ceilingRelativeY > 0)
             {
-                uint8_t ceilingColor = worldSampleColor(world->ceilingBitmap, mapX, mapY, world->ceilingFillColor.gray);
+                uint8_t ceilingColor = planeColorAt(world, &world->ceiling, mapX, mapY);
 #if PD_MODE7_SHADER
                 shaderApply(display->ceilingShader, &ceilingColor, leftPoint, parameters);
 #endif
@@ -1118,15 +1155,54 @@ static void worldDraw(PDMode7_World *pWorld, PDMode7_Display *display)
     }
 }
 
-static inline uint8_t worldSampleColor(PDMode7_Bitmap *bitmap, int x, int y, uint8_t fillColor)
+static inline uint8_t planeColorAt(PDMode7_World *world, PDMode7_Plane *plane, int x, int y)
 {
-    // Check for point inside the bitmap
-    if(x >= 0 && x < bitmap->width && y >= 0 && y < bitmap->height)
+#if PD_MODE7_TILEMAP
+    PDMode7_Tilemap *tilemap = plane->tilemap;
+    PDMode7_Bitmap *bitmap = plane->bitmap;
+    if(tilemap)
     {
-        // Get color from bitmap
+        if(x >= 0 && y >= 0 && x < world->width && y < world->height)
+        {
+            int column = x >> tilemap->tileWidth_log;
+            int row = y >> tilemap->tileHeight_log;
+            
+            if(column < tilemap->columns && row < tilemap->rows)
+            {
+                PDMode7_Tile *tile = &tilemap->tiles[row * tilemap->columns + column];
+                
+                int tileX = floorf((int)(x & (tilemap->tileWidth - 1)) * tile->scaleInv);
+                int tileY = floorf((int)(y & (tilemap->tileHeight - 1)) * tile->scaleInv);
+                
+                if(tile->bitmap && tileX >= 0 && tileX < tile->bitmap->width && tileY >= 0 && tileY < tile->bitmap->height)
+                {
+                    return tile->bitmap->data[tileY * tile->bitmap->width + tileX];
+                }
+            }
+        }
+        else if(tilemap->fillBitmap)
+        {
+            int tileX = floorf((int)(x & (tilemap->tileWidth - 1)) * tilemap->fillBitmapScaleInv);
+            int tileY = floorf((int)(y & (tilemap->tileHeight - 1)) * tilemap->fillBitmapScaleInv);
+            
+            if(tileX >= 0 && tileX < tilemap->fillBitmap->width && tileY >= 0 && tileY < tilemap->fillBitmap->height)
+            {
+                return tilemap->fillBitmap->data[tileY * tilemap->fillBitmap->width + tileX];
+            }
+        }
+    }
+    else if(bitmap && x >= 0 && x < bitmap->width && y >= 0 && y < bitmap->height)
+    {
         return bitmap->data[bitmap->width * y + x];
     }
-    return fillColor;
+#else
+    PDMode7_Bitmap *bitmap = plane->bitmap;
+    if(bitmap && x >= 0 && x < bitmap->width && y >= 0 && y < bitmap->height)
+    {
+        return bitmap->data[bitmap->width * y + x];
+    }
+#endif
+    return plane->fillColor.gray;
 }
 
 static inline void worldSetColor(uint8_t color, PDMode7_DisplayScale displayScale, uint8_t *ptr, int rowbytes, _PDMode7_DitherPattern p, int bit, int y, int dy)
@@ -1193,27 +1269,33 @@ static inline void worldSetColor(uint8_t color, PDMode7_DisplayScale displayScal
     }
 }
 
-static PDMode7_Vec3 displayToPlanePoint(PDMode7_Display *display, int displayX, int displayY, float infValue, _PDMode7_Parameters *p)
+static PDMode7_Vec3 displayToPlanePoint(PDMode7_Display *display, int displayX, int displayY, _PDMode7_Parameters *p)
 {
     PDMode7_Camera *camera = display->camera;
-
+    
     // Calculate the screen coordinates in world space
     float worldScreenX = (displayX * p->screenRatio.x - 1) * p->tanHalfFov.x;
-    float worldScreenY = (1 - displayY * p->screenRatio.y) * p->tanHalfFov.y;
-
+    
+    float y_ndc = 1 - displayY * p->screenRatio.y;
+    if(y_ndc == 0)
+    {
+        y_ndc = -(p->ndc_inf);
+    }
+    float worldScreenY = y_ndc * p->tanHalfFov.y;
+    
     // Calculate the direction vector in world space
     float directionX = p->forwardVec.x + p->rightVec.x * worldScreenX + p->upVec.x * worldScreenY;
     float directionY = p->forwardVec.y + p->rightVec.y * worldScreenX + p->upVec.y * worldScreenY;
     float directionZ = p->forwardVec.z + p->rightVec.z * worldScreenX + p->upVec.z * worldScreenY;
     
-    float intersectionX = infValue;
-    float intersectionY = infValue;
+    float intersectionX = 0;
+    float intersectionY = 0;
     float intersectionZ = -1;
     
     if(directionZ < 0)
     {
         // Calculate the intersection point with the plane at z = 0
-        float t = -camera->position.z / directionZ;
+        float t = -(camera->position.z) / directionZ;
         
         intersectionX = camera->position.x + t * directionX;
         intersectionY = camera->position.y + t * directionY;
@@ -1391,7 +1473,7 @@ static PDMode7_Vec3 displayToPlanePoint_public(PDMode7_World *pWorld, int displa
 {
     display = getDisplay(pWorld, display);
     _PDMode7_Parameters parameters = worldGetParameters(display);
-    return displayToPlanePoint(display, displayX, displayY, INFINITY, &parameters);
+    return displayToPlanePoint(display, displayX, displayY, &parameters);
 }
 
 static PDMode7_Vec3 worldToDisplayPoint(PDMode7_Display *display, PDMode7_Vec3 point, _PDMode7_Parameters *p)
@@ -1614,22 +1696,22 @@ static PDMode7_Vec3 worldGetSize(PDMode7_World *world)
 
 static float worldGetScale(PDMode7_World *world)
 {
-    PDMode7_Bitmap *bitmap = world->planeBitmap;
+    PDMode7_Bitmap *bitmap = world->plane.bitmap;
     if(bitmap && bitmap->width != 0)
     {
-        return world->width / (float)bitmap->width;
+        return (float)world->width / bitmap->width;
     }
-    return 0;
+    return 1;
 }
 
 static float worldGetScaleInv(PDMode7_World *world)
 {
-    PDMode7_Bitmap *bitmap = world->planeBitmap;
+    PDMode7_Bitmap *bitmap = world->plane.bitmap;
     if(bitmap && world->width != 0)
     {
         return (float)bitmap->width / world->width;
     }
-    return 0;
+    return 1;
 }
 
 static PDMode7_Display* worldGetMainDisplay(PDMode7_World *world)
@@ -1642,66 +1724,129 @@ static PDMode7_Camera* worldGetMainCamera(PDMode7_World *world)
     return world->mainCamera;
 }
 
+static PDMode7_Color planeColorAt_public(PDMode7_World *world, PDMode7_Plane *plane, int x, int y)
+{
+    float scaleInv = worldGetScaleInv(world);
+    
+    x = floorf(x * scaleInv);
+    y = floorf(y * scaleInv);
+    
+    uint8_t color = planeColorAt(world, plane, x, y);
+    return newGrayscaleColor(color, 255);
+}
+
+static PDMode7_Color worldPlaneColorAt(PDMode7_World *world, int x, int y)
+{
+    return planeColorAt_public(world, &world->plane, x, y);
+}
+
+static PDMode7_Color worldCeilingColorAt(PDMode7_World *world, int x, int y)
+{
+    return planeColorAt_public(world, &world->ceiling, x, y);
+}
+
+static void setPlaneTilemap_generic(PDMode7_Plane *plane, PDMode7_Tilemap *tilemap)
+{
+    if(tilemap && tilemap->luaRef)
+    {
+        GC_retain(tilemap->luaRef);
+    }
+    
+    PDMode7_Tilemap *currentTilemap = plane->tilemap;
+    if(currentTilemap && currentTilemap->luaRef)
+    {
+        GC_release(currentTilemap->luaRef);
+    }
+    
+    plane->tilemap = tilemap;
+}
+
+static void setPlaneBitmap_generic(PDMode7_Plane *plane, PDMode7_Bitmap *bitmap)
+{
+    if(bitmap && bitmap->luaRef)
+    {
+        GC_retain(bitmap->luaRef);
+    }
+    
+    PDMode7_Bitmap *currentBitmap = plane->bitmap;
+    if(currentBitmap && currentBitmap->luaRef)
+    {
+        GC_release(currentBitmap->luaRef);
+    }
+    
+    plane->bitmap = bitmap;
+}
+
 static PDMode7_Bitmap* getPlaneBitmap(PDMode7_World *world)
 {
-    return world->planeBitmap;
+    return world->plane.bitmap;
 }
 
 static void setPlaneBitmap(PDMode7_World *world, PDMode7_Bitmap *bitmap)
 {
-    PDMode7_Bitmap *currentBitmap = world->planeBitmap;
-    if(currentBitmap && currentBitmap->luaRef)
-    {
-        GC_release(currentBitmap->luaRef);
-    }
-    
-    if(bitmap && bitmap->luaRef)
-    {
-        GC_retain(bitmap->luaRef);
-    }
-    
-    world->planeBitmap = bitmap;
+    setPlaneBitmap_generic(&world->plane, bitmap);
 }
 
 static void setPlaneFillColor(PDMode7_World *world, PDMode7_Color color)
 {
-    world->planeFillColor = color;
+    world->plane.fillColor = color;
 }
 
 static PDMode7_Color getPlaneFillColor(PDMode7_World *world)
 {
-    return world->planeFillColor;
+    return world->plane.fillColor;
 }
 
 static PDMode7_Bitmap* getCeilingBitmap(PDMode7_World *world)
 {
-    return world->ceilingBitmap;
+    return world->ceiling.bitmap;
 }
 
 static void setCeilingBitmap(PDMode7_World *world, PDMode7_Bitmap *bitmap)
 {
-    PDMode7_Bitmap *currentBitmap = world->ceilingBitmap;
-    if(currentBitmap && currentBitmap->luaRef)
-    {
-        GC_release(currentBitmap->luaRef);
-    }
-    
-    if(bitmap && bitmap->luaRef)
-    {
-        GC_retain(bitmap->luaRef);
-    }
-    
-    world->ceilingBitmap = bitmap;
+    setPlaneBitmap_generic(&world->ceiling, bitmap);
 }
 
 static void setCeilingFillColor(PDMode7_World *world, PDMode7_Color color)
 {
-    world->ceilingFillColor = color;
+    world->ceiling.fillColor = color;
 }
 
 static PDMode7_Color getCeilingFillColor(PDMode7_World *world)
 {
-    return world->ceilingFillColor;
+    return world->ceiling.fillColor;
+}
+
+static void setPlaneTilemap(PDMode7_World *world, PDMode7_Tilemap *tilemap)
+{
+    setPlaneTilemap_generic(&world->plane, tilemap);
+}
+
+static PDMode7_Tilemap* getPlaneTilemap(PDMode7_World *world)
+{
+    return world->plane.tilemap;
+}
+
+static void setCeilingTilemap(PDMode7_World *world, PDMode7_Tilemap *tilemap)
+{
+    setPlaneTilemap_generic(&world->ceiling, tilemap);
+}
+
+static PDMode7_Tilemap* getCeilingTilemap(PDMode7_World *world)
+{
+    return world->ceiling.tilemap;
+}
+
+static void releasePlane(PDMode7_Plane *plane)
+{
+    if(plane->bitmap)
+    {
+        releaseBitmap(plane->bitmap);
+    }
+    if(plane->tilemap && plane->tilemap->luaRef)
+    {
+        GC_release(plane->tilemap->luaRef);
+    }
 }
 
 static void freeWorld(PDMode7_World *world)
@@ -1721,15 +1866,9 @@ static void freeWorld(PDMode7_World *world)
     freeGrid(world->grid);
     freeArray(world->sprites);
     
-    if(world->planeBitmap)
-    {
-        releaseBitmap(world->planeBitmap);
-    }
-    if(world->ceilingBitmap)
-    {
-        releaseBitmap(world->ceilingBitmap);
-    }
-    
+    releasePlane(&world->plane);
+    releasePlane(&world->ceiling);
+
     if(world->mainCamera)
     {
         PDMode7_Camera *mainCamera = world->mainCamera;
@@ -1821,15 +1960,15 @@ static PDMode7_Camera* displayGetCamera(PDMode7_Display *display)
 
 static void displaySetCamera(PDMode7_Display *display, PDMode7_Camera *camera)
 {
+    if(camera->luaRef)
+    {
+        GC_retain(camera->luaRef);
+    }
+    
     PDMode7_Camera *currentCamera = display->camera;
     if(currentCamera && currentCamera->luaRef)
     {
         GC_release(currentCamera->luaRef);
-    }
-    
-    if(camera->luaRef)
-    {
-        GC_retain(camera->luaRef);
     }
     
     display->camera = camera;
@@ -1847,13 +1986,13 @@ static PDMode7_Shader* displayGetPlaneShader(PDMode7_Display *display)
 
 static void displaySetPlaneShader(PDMode7_Display *display, PDMode7_Shader *shader)
 {
-    if(display->planeShader)
-    {
-        releaseShader(display->planeShader);
-    }
     if(shader && shader->luaRef)
     {
         GC_retain(shader->luaRef);
+    }
+    if(display->planeShader)
+    {
+        releaseShader(display->planeShader);
     }
     display->planeShader = shader;
 }
@@ -1865,13 +2004,13 @@ static PDMode7_Shader* displayGetCeilingShader(PDMode7_Display *display)
 
 static void displaySetCeilingShader(PDMode7_Display *display, PDMode7_Shader *shader)
 {
-    if(display->ceilingShader)
-    {
-        releaseShader(display->ceilingShader);
-    }
     if(shader && shader->luaRef)
     {
         GC_retain(shader->luaRef);
+    }
+    if(display->ceilingShader)
+    {
+        releaseShader(display->ceilingShader);
     }
     display->ceilingShader = shader;
 }
@@ -2079,14 +2218,13 @@ static _PDMode7_LuaBitmap* backgroundGetLuaBitmap(PDMode7_Background *background
 static void backgroundSetBitmap(PDMode7_Background *background, LCDBitmap *bitmap, _PDMode7_LuaBitmap *luaBitmap)
 {
     _PDMode7_LuaBitmap *currentLuaBitmap = background->luaBitmap;
-    if(currentLuaBitmap)
-    {
-        GC_release(currentLuaBitmap->luaRef);
-    }
-    
     if(luaBitmap)
     {
         GC_retain(luaBitmap->luaRef);
+    }
+    if(currentLuaBitmap)
+    {
+        GC_release(currentLuaBitmap->luaRef);
     }
     
     background->bitmap = bitmap;
@@ -2598,13 +2736,13 @@ static void spriteSetDrawFunction_c(PDMode7_Sprite *sprite, PDMode7_SpriteDrawCa
 
 static void _spriteSetBitmapTable(PDMode7_SpriteInstance *instance, LCDBitmapTable *bitmapTable, _PDMode7_LuaBitmapTable *luaBitmapTable)
 {
-    if(instance->luaBitmapTable)
-    {
-        GC_release(instance->luaBitmapTable->luaRef);
-    }
     if(luaBitmapTable)
     {
         GC_retain(luaBitmapTable->luaRef);
+    }
+    if(instance->luaBitmapTable)
+    {
+        GC_release(instance->luaBitmapTable->luaRef);
     }
     instance->bitmapTable = bitmapTable;
     instance->luaBitmapTable = luaBitmapTable;
@@ -2907,8 +3045,6 @@ static PDMode7_Sprite* spriteInstanceGetSprite(PDMode7_SpriteInstance *instance)
     return instance->sprite;
 }
 
-
-
 static PDMode7_Shader newShader(PDMode7_ShaderType type, void *object)
 {
     return (PDMode7_Shader){
@@ -3069,6 +3205,160 @@ static void radialShaderSetInverted(PDMode7_RadialShader *radial, int inverted)
 static void freeRadialShader(PDMode7_RadialShader *radial)
 {
     playdate->system->realloc(radial, 0);
+}
+
+static PDMode7_Tilemap* newTilemap(PDMode7_World *world, int tileWidth, int tileHeight)
+{
+    int valid = (tileWidth > 0 && tileHeight > 0 && (tileWidth % 2) == 0 && (tileHeight % 2) == 0);
+    if(!valid)
+    {
+        return NULL;
+    }
+    
+    int rows = (world->width + tileWidth - 1) / tileWidth;
+    int columns = (world->height + tileHeight - 1) / tileHeight;
+    
+    PDMode7_Tilemap *tilemap = playdate->system->realloc(NULL, sizeof(PDMode7_Tilemap));
+    
+    tilemap->rows = rows;
+    tilemap->columns = columns;
+    tilemap->tileWidth = tileWidth;
+    tilemap->tileHeight = tileHeight;
+    tilemap->tileWidth_log = log2_int(tileWidth);
+    tilemap->tileHeight_log = log2_int(tileHeight);
+    
+    int len = rows * columns;
+    tilemap->tiles = playdate->system->realloc(NULL, len * sizeof(PDMode7_Tile));
+    
+    for(int i = 0; i < len; i++)
+    {
+        PDMode7_Tile *tile = &tilemap->tiles[i];
+        tile->bitmap = NULL;
+        tile->scaleInv = 0;
+    }
+    
+    tilemap->fillBitmap = NULL;
+    tilemap->fillBitmapScaleInv = 0;
+    tilemap->luaRef = NULL;
+    
+    return tilemap;
+}
+
+static void tilemapSetBitmapAtIndex(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int index)
+{
+    if(index >= 0 && index < (tilemap->rows * tilemap->columns))
+    {
+        PDMode7_Tile *tile = &tilemap->tiles[index];
+        
+        if(bitmap && bitmap->luaRef)
+        {
+            GC_retain(bitmap->luaRef);
+        }
+        
+        PDMode7_Bitmap *currentBitmap = tile->bitmap;
+        if(currentBitmap && currentBitmap->luaRef)
+        {
+            GC_release(currentBitmap->luaRef);
+        }
+        
+        tile->bitmap = bitmap;
+        tile->scaleInv = bitmap ? (float)bitmap->width / tilemap->tileWidth : 0;
+    }
+}
+
+static void tilemapSetBitmapAtPosition(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int row, int column)
+{
+    tilemapSetBitmapAtIndex(tilemap, bitmap, row * tilemap->columns + column);
+}
+
+static PDMode7_Bitmap* tilemapGetBitmapAtPosition(PDMode7_Tilemap *tilemap, int row, int column)
+{
+    int index = row * tilemap->columns + column;
+    if(index >= 0 && index < (tilemap->rows * tilemap->columns))
+    {
+        PDMode7_Tile *tile = &tilemap->tiles[index];
+        return tile->bitmap;
+    }
+    return NULL;
+}
+
+static void tilemapSetBitmapAtRange(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int startRow, int startColumn, int endRow, int endColumn)
+{
+    if(endRow < 0)
+    {
+        endRow = tilemap->rows - 1;
+    }
+    if(endColumn < 0)
+    {
+        endColumn = tilemap->columns - 1;
+    }
+    
+    int startIndex = startRow * tilemap->columns + startColumn;
+    int endIndex = endRow * tilemap->columns + endColumn;
+    
+    for(int i = startIndex; i <= endIndex; i++)
+    {
+        tilemapSetBitmapAtIndex(tilemap, bitmap, i);
+    }
+}
+
+static void tilemapSetBitmapAtIndexes(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int *indexes, int len)
+{
+    for(int i = 0; i < len; i++)
+    {
+        tilemapSetBitmapAtIndex(tilemap, bitmap, indexes[i]);
+    }
+}
+
+static void tilemapSetFillBitmap(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap)
+{
+    if(bitmap && bitmap->luaRef)
+    {
+        GC_retain(bitmap->luaRef);
+    }
+    
+    PDMode7_Bitmap *currentBitmap = tilemap->fillBitmap;
+    if(currentBitmap && currentBitmap->luaRef)
+    {
+        GC_release(currentBitmap->luaRef);
+    }
+    
+    tilemap->fillBitmap = bitmap;
+    tilemap->fillBitmapScaleInv = bitmap ? (float)bitmap->width / tilemap->tileWidth : 0;
+}
+
+static PDMode7_Bitmap* tilemapGetFillBitmap(PDMode7_Tilemap *tilemap)
+{
+    return tilemap->fillBitmap;
+}
+
+static void releaseTilemap(PDMode7_Tilemap *tilemap)
+{
+    if(tilemap->luaRef)
+    {
+        GC_release(tilemap->luaRef);
+    }
+}
+
+static void freeTilemap(PDMode7_Tilemap *tilemap)
+{
+    int len = tilemap->rows * tilemap->columns;
+    for(int i = 0; i < len; i++)
+    {
+        PDMode7_Tile *tile = &tilemap->tiles[i];
+        if(tile->bitmap)
+        {
+            releaseBitmap(tile->bitmap);
+        }
+    }
+    
+    if(tilemap->fillBitmap)
+    {
+        releaseBitmap(tilemap->fillBitmap);
+    }
+    
+    playdate->system->realloc(tilemap->tiles, 0);
+    playdate->system->realloc(tilemap, 0);
 }
 
 static inline PDMode7_Rect newRect(int x, int y, int width, int height)
@@ -3561,6 +3851,17 @@ static void poolClear_public(void)
     poolClear(pool);
 }
 
+static int log2_int(uint32_t n)
+{
+    int r = 0;
+    while(n > 1)
+    {
+        n /= 2;
+        r++;
+    }
+    return r;
+}
+
 typedef struct {
     char *data;
     int position;
@@ -3639,7 +3940,7 @@ static PDMode7_Bitmap* newBaseBitmap(void)
     bitmap->data = NULL;
     bitmap->mask = NULL;
     bitmap->layers = newArray();
-    bitmap->managedMask = NULL;
+    bitmap->isManaged = 0;
     bitmap->freeData = 0;
     bitmap->luaRef = NULL;
 
@@ -3668,13 +3969,48 @@ static PDMode7_Bitmap* newBitmap(int width, int height, PDMode7_Color bgColor)
         
         mask->data = playdate->system->realloc(NULL, dataLen);
         memset(mask->data, 0x00, dataLen);
+        
         mask->freeData = 1;
+        mask->isManaged = 1;
         
         bitmap->mask = mask;
-        bitmap->managedMask = mask;
     }
     
     return bitmap;
+}
+
+static PDMode7_Bitmap* copyBitmap(PDMode7_Bitmap *src)
+{
+    PDMode7_Bitmap *dst = newBaseBitmap();
+    
+    dst->width = src->width;
+    dst->height = src->height;
+    
+    size_t dataLen = src->width * src->height;
+    
+    dst->data = playdate->system->realloc(NULL, dataLen);
+    memcpy(dst->data, src->data, dataLen);
+    dst->freeData = 1;
+    
+    if(src->mask)
+    {
+        PDMode7_Bitmap *mask = newBaseBitmap();
+        
+        mask->width = src->mask->width;
+        mask->height = src->mask->height;
+        
+        size_t maskLen = src->mask->width * src->mask->height;
+        
+        mask->data = playdate->system->realloc(NULL, maskLen);
+        memcpy(mask->data, src->mask->data, maskLen);
+        
+        mask->freeData = 1;
+        mask->isManaged = 1;
+        
+        dst->mask = mask;
+    }
+    
+    return dst;
 }
 
 static PDMode7_Bitmap* loadPGM(const char *filename)
@@ -3768,6 +4104,11 @@ static void bitmapSetMask(PDMode7_Bitmap *bitmap, PDMode7_Bitmap *mask)
 {
     if(mask)
     {
+        // The new mask can't be managed
+        if(mask->isManaged)
+        {
+            return;
+        }
         // Mask size must be equal to bitmap size
         if((bitmap->width != mask->width) || (bitmap->height != mask->height))
         {
@@ -3775,18 +4116,21 @@ static void bitmapSetMask(PDMode7_Bitmap *bitmap, PDMode7_Bitmap *mask)
         }
     }
     
-    if(bitmap->mask)
-    {
-        PDMode7_Bitmap *currentMask = bitmap->mask;
-        if(currentMask->luaRef)
-        {
-            GC_release(currentMask->luaRef);
-        }
-    }
-    
     if(mask && mask->luaRef)
     {
         GC_retain(mask->luaRef);
+    }
+    
+    if(bitmap->mask)
+    {
+        if(bitmap->mask->isManaged)
+        {
+            freeBitmap(bitmap->mask);
+        }
+        else
+        {
+            releaseBitmap(bitmap->mask);
+        }
     }
     
     bitmap->mask = mask;
@@ -3903,21 +4247,19 @@ static void freeBitmap(PDMode7_Bitmap *bitmap)
     
     if(bitmap->mask)
     {
-        PDMode7_Bitmap *_mask = bitmap->mask;
-        if(_mask->luaRef)
+        if(bitmap->mask->isManaged)
         {
-            GC_release(_mask->luaRef);
+            freeBitmap(bitmap->mask);
+        }
+        else
+        {
+            releaseBitmap(bitmap->mask);
         }
     }
     
     if(bitmap->freeData)
     {
         playdate->system->realloc(bitmap->data, 0);
-    }
-    
-    if(bitmap->managedMask)
-    {
-        freeBitmap(bitmap->managedMask);
     }
     
     playdate->system->realloc(bitmap, 0);
@@ -4038,17 +4380,14 @@ static void bitmapLayerSetBitmap(PDMode7_BitmapLayer *layer, PDMode7_Bitmap *bit
 {
     bitmapLayerRestore(layer);
     
-    if(layer->bitmap)
-    {
-        if(layer->bitmap->luaRef)
-        {
-            GC_release(layer->bitmap->luaRef);
-        }
-    }
-    
     if(bitmap->luaRef)
     {
         GC_retain(bitmap->luaRef);
+    }
+    
+    if(layer->bitmap && layer->bitmap->luaRef)
+    {
+        GC_release(layer->bitmap->luaRef);
     }
     
     layer->bitmap = bitmap;
@@ -4262,6 +4601,7 @@ static char *lua_kArray = "mode7.array";
 static char *lua_kShader = "mode7.shader";
 static char *lua_kShaderLinear = "mode7.shader.linear";
 static char *lua_kShaderRadial = "mode7.shader.radial";
+static char *lua_kTilemap = "mode7.tilemap";
 
 static PDMode7_Color lua_getColor(lua_State *L, int *i)
 {
@@ -4355,6 +4695,16 @@ static int lua_newWorld(lua_State *L)
     return 1;
 }
 
+static int lua_newTilemap(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    int tileWidth = playdate->lua->getArgInt(2);
+    int tileHeight = playdate->lua->getArgInt(3);
+    PDMode7_Tilemap *tilemap = newTilemap(world, tileWidth, tileHeight);
+    tilemap->luaRef = playdate->lua->pushObject(tilemap, lua_kTilemap, 0);
+    return 1;
+}
+
 static int lua_getPlaneBitmap(lua_State *L)
 {
     PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
@@ -4434,6 +4784,56 @@ static int lua_setCeilingFillColor(lua_State *L)
     int ci = 2;
     setCeilingFillColor(world, lua_getColor(L, &ci));
     return 0;
+}
+
+static int lua_planeColorAt(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    int x = playdate->lua->getArgInt(2);
+    int y = playdate->lua->getArgInt(3);
+    int clen;
+    lua_pushColor(L, planeColorAt_public(world, &world->plane, x, y), &clen);
+    return clen;
+}
+
+static int lua_ceilingColorAt(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    int x = playdate->lua->getArgInt(2);
+    int y = playdate->lua->getArgInt(3);
+    int clen;
+    lua_pushColor(L, planeColorAt_public(world, &world->ceiling, x, y), &clen);
+    return clen;
+}
+
+static int lua_setPlaneTilemap(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(2, lua_kTilemap, NULL);
+    setPlaneTilemap_generic(&world->plane, tilemap);
+    return 0;
+}
+
+static int lua_getPlaneTilemap(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    playdate->lua->pushObject(world->plane.tilemap, lua_kTilemap, 0);
+    return 1;
+}
+
+static int lua_setCeilingTilemap(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(2, lua_kTilemap, NULL);
+    setPlaneTilemap_generic(&world->ceiling, tilemap);
+    return 0;
+}
+
+static int lua_getCeilingTilemap(lua_State *L)
+{
+    PDMode7_World *world = playdate->lua->getArgObject(1, lua_kWorld, NULL);
+    playdate->lua->pushObject(world->ceiling.tilemap, lua_kTilemap, 0);
+    return 1;
 }
 
 static int lua_worldUpdate(lua_State *L)
@@ -4563,6 +4963,13 @@ static const lua_reg lua_world[] = {
     { "setCeilingBitmap", lua_setCeilingBitmap },
     { "getMainDisplay", lua_worldGetMainDisplay },
     { "addDisplay", lua_addDisplay },
+    { "newTilemap", lua_newTilemap },
+    { "setPlaneTilemap", lua_setPlaneTilemap },
+    { "getPlaneTilemap", lua_getPlaneTilemap },
+    { "setCeilingTilemap", lua_setCeilingTilemap },
+    { "getCeilingTilemap", lua_getCeilingTilemap },
+    { "_planeColorAt", lua_planeColorAt },
+    { "_ceilingColorAt", lua_ceilingColorAt },
     { "displayToPlanePoint", lua_displayToPlanePoint },
     { "worldToDisplayPoint", lua_worldToDisplayPoint },
     { "displayMultiplierForScanlineAt", lua_displayMultiplierForScanlineAt },
@@ -5942,6 +6349,16 @@ static int lua_loadPGM(lua_State *L)
     return 1;
 }
 
+static int lua_copyBitmap(lua_State *L)
+{
+    PDMode7_Bitmap *src = playdate->lua->getArgObject(1, lua_kBitmap, NULL);
+    PDMode7_Bitmap *dst = copyBitmap(src);
+
+    LuaUDObject *luaRef = playdate->lua->pushObject(dst, lua_kBitmap, 0);
+    dst->luaRef = luaRef;
+    return 1;
+}
+
 static int lua_bitmapGetSize(lua_State *L)
 {
     PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(1, lua_kBitmap, NULL);
@@ -6021,6 +6438,7 @@ static int lua_freeBitmap(lua_State *L)
 static const lua_reg lua_bitmap[] = {
     { "_new", lua_bitmapNew },
     { "loadPGM", lua_loadPGM },
+    { "copy", lua_copyBitmap },
     { "getSize", lua_bitmapGetSize },
     { "_colorAt", lua_bitmapColorAt },
     { "getMask", lua_bitmapGetMask },
@@ -6208,6 +6626,71 @@ static const lua_reg lua_background[] = {
     { NULL, NULL }
 };
 
+static int lua_tilemapSetBitmapAtPosition(lua_State *L)
+{
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(1, lua_kTilemap, NULL);
+    PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(2, lua_kBitmap, NULL);
+    int row = playdate->lua->getArgInt(3);
+    int column = playdate->lua->getArgInt(4);
+    tilemapSetBitmapAtPosition(tilemap, bitmap, row, column);
+    return 0;
+}
+
+static int lua_tilemapSetBitmapAtRange(lua_State *L)
+{
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(1, lua_kTilemap, NULL);
+    PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(2, lua_kBitmap, NULL);
+    int row1 = playdate->lua->getArgInt(3);
+    int column1 = playdate->lua->getArgInt(4);
+    int row2 = playdate->lua->getArgInt(5);
+    int column2 = playdate->lua->getArgInt(6);
+    tilemapSetBitmapAtRange(tilemap, bitmap, row1, column1, row2, column2);
+    return 0;
+}
+
+static int lua_tilemapGetBitmapAtPosition(lua_State *L)
+{
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(1, lua_kTilemap, NULL);
+    int row = playdate->lua->getArgInt(2);
+    int column = playdate->lua->getArgInt(3);
+    PDMode7_Bitmap *bitmap = tilemapGetBitmapAtPosition(tilemap, row, column);
+    playdate->lua->pushObject(bitmap, lua_kBitmap, 0);
+    return 1;
+}
+
+static int lua_tilemapSetFillBitmap(lua_State *L)
+{
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(1, lua_kTilemap, NULL);
+    PDMode7_Bitmap *bitmap = playdate->lua->getArgObject(2, lua_kBitmap, NULL);
+    tilemapSetFillBitmap(tilemap, bitmap);
+    return 0;
+}
+
+static int lua_tilemapGetFillBitmap(lua_State *L)
+{
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(1, lua_kTilemap, NULL);
+    PDMode7_Bitmap *bitmap = tilemapGetFillBitmap(tilemap);
+    playdate->lua->pushObject(bitmap, lua_kBitmap, 0);
+    return 1;
+}
+
+static int lua_freeTilemap(lua_State *L)
+{
+    PDMode7_Tilemap *tilemap = playdate->lua->getArgObject(1, lua_kTilemap, NULL);
+    freeTilemap(tilemap);
+    return 0;
+}
+
+static const lua_reg lua_tilemap[] = {
+    { "setBitmapAtPosition", lua_tilemapSetBitmapAtPosition },
+    { "setBitmapAtRange", lua_tilemapSetBitmapAtRange },
+    { "getBitmapAtPosition", lua_tilemapGetBitmapAtPosition },
+    { "setFillBitmap", lua_tilemapSetFillBitmap },
+    { "getFillBitmap", lua_tilemapGetFillBitmap },
+    { "__gc", lua_freeTilemap },
+    { NULL, NULL }
+};
+
 void PDMode7_init(PlaydateAPI *pd, int enableLua)
 {
     playdate = pd;
@@ -6224,8 +6707,11 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->world = playdate->system->realloc(NULL, sizeof(PDMode7_World_API));
     mode7->world->defaultConfiguration = defaultWorldConfiguration;
     mode7->world->newWorld = worldWithConfiguration;
+    mode7->world->newTilemap = newTilemap;  // LUACHECK
     mode7->world->getMainDisplay = worldGetMainDisplay; // LUACHECK
     mode7->world->getMainCamera = worldGetMainCamera;
+    mode7->world->planeColorAt = worldPlaneColorAt;  // LUACHECK=planeColorAt
+    mode7->world->ceilingColorAt = worldCeilingColorAt; // LUACHECK=ceilingColorAt
     mode7->world->getSize = worldGetSize;
     mode7->world->getScale = worldGetScale;
     mode7->world->update = worldUpdate; // LUACHECK
@@ -6238,6 +6724,10 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->world->setCeilingBitmap = setCeilingBitmap; // LUACHECK
     mode7->world->getCeilingFillColor = getCeilingFillColor; // LUACHECK
     mode7->world->setCeilingFillColor = setCeilingFillColor; // LUACHECK
+    mode7->world->setPlaneTilemap = setPlaneTilemap; // LUACHECK
+    mode7->world->getPlaneTilemap = getPlaneTilemap; // LUACHECK
+    mode7->world->setCeilingTilemap = setCeilingTilemap; // LUACHECK
+    mode7->world->getCeilingTilemap = getCeilingTilemap; // LUACHECK
     mode7->world->addSprite = addSprite; // LUACHECK
     mode7->world->addDisplay = addDisplay; // LUACHECK
     mode7->world->getSprites = getSprites; // LUACHECK
@@ -6372,8 +6862,9 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->spriteInstance->dataSource->setLayout = _spriteDataSourceSetLayout; // LUACHECK=spriteInstanceDataSourceSetLayout
     
     mode7->bitmap = playdate->system->realloc(NULL, sizeof(PDMode7_Bitmap_API));
-    mode7->bitmap->newBitmap = newBitmap; // LUACHECK
+    mode7->bitmap->newBitmap = newBitmap;
     mode7->bitmap->loadPGM = loadPGM; // LUACHECK
+    mode7->bitmap->copyBitmap = copyBitmap; // LUACHECK
     mode7->bitmap->getSize = bitmapGetSize; // LUACHECK
     mode7->bitmap->colorAt = bitmapColorAt; // LUACHECK
     mode7->bitmap->getMask = bitmapGetMask; // LUACHECK
@@ -6423,6 +6914,15 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
     mode7->shader->radial->getInverted = radialShaderGetInverted; // LUACHECK
     mode7->shader->radial->setInverted = radialShaderSetInverted; // LUACHECK
     mode7->shader->radial->freeRadial = freeRadialShader; // LUACHECK
+    
+    mode7->tilemap = playdate->system->realloc(NULL, sizeof(PDMode7_Tilemap_API));
+    mode7->tilemap->setBitmapAtPosition = tilemapSetBitmapAtPosition; // LUACHECK
+    mode7->tilemap->setBitmapAtRange = tilemapSetBitmapAtRange; // LUACHECK
+    mode7->tilemap->setBitmapAtIndexes = tilemapSetBitmapAtIndexes;
+    mode7->tilemap->getBitmapAtPosition = tilemapGetBitmapAtPosition; // LUACHECK
+    mode7->tilemap->setFillBitmap = tilemapSetFillBitmap; // LUACHECK
+    mode7->tilemap->getFillBitmap = tilemapGetFillBitmap; // LUACHECK
+    mode7->tilemap->freeTilemap = freeTilemap; // LUACHECK
 
     mode7->vec2 = playdate->system->realloc(NULL, sizeof(PDMode7_Vec2_API));
     mode7->vec2->newVec2 = newVec2;
@@ -6454,6 +6954,7 @@ void PDMode7_init(PlaydateAPI *pd, int enableLua)
         playdate->lua->registerClass(lua_kShader, lua_shader, NULL, 0, NULL);
         playdate->lua->registerClass(lua_kShaderLinear, lua_linearShader, NULL, 0, NULL);
         playdate->lua->registerClass(lua_kShaderRadial, lua_radialShader, NULL, 0, NULL);
+        playdate->lua->registerClass(lua_kTilemap, lua_tilemap, NULL, 0, NULL);
 
         playdate->lua->addFunction(lua_poolRealloc, "mode7.pool.realloc", NULL);
         playdate->lua->addFunction(lua_poolClear, "mode7.pool.clear", NULL);

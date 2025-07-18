@@ -89,6 +89,28 @@ function mode7.world:setCeilingFillColor(color)
     self:_setCeilingFillColor(color.gray, color.alpha)
 end
 
+--- Gets the color of the plane at the specified point.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-planeColorAt
+---@param x number
+---@param y number
+---@return mode7.color
+function mode7.world:planeColorAt(x, y)
+    local gray, alpha = self:_planeColorAt(x, y)
+    return mode7.color.grayscale.new(gray, alpha)
+end
+
+--- Gets the color of the ceiling at the specified point.
+---
+--- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-ceilingColorAt
+---@param x number
+---@param y number
+---@return mode7.color
+function mode7.world:ceilingColorAt(x, y)
+    local gray, alpha = self:_ceilingColorAt(x, y)
+    return mode7.color.grayscale.new(gray, alpha)
+end
+
 -- Display
 
 mode7.display.kScale1x1 = 0

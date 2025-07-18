@@ -22,6 +22,21 @@ function newWorld()
     
     world:setPlaneFillColor(mode7.color.grayscale.new(60, 255))
 
+    --[[
+    local tilemap = world:newTilemap(64, 64)
+
+    local tileBitmap = mode7.bitmap.loadPGM("images/tile.pgm")
+    tilemap:setBitmapAtRange(tileBitmap, 0, 0, -1, -1)
+    
+    local tileBitmap1 = mode7.bitmap.loadPGM("images/tile1.pgm")
+    tilemap:setBitmapAtPosition(tileBitmap1, 16, 3)
+    tilemap:setBitmapAtPosition(tileBitmap1, 16, 4)
+
+    tilemap:setFillBitmap(tileBitmap)
+
+    world:setPlaneTilemap(tilemap)
+    --]]
+
     local imageTable = mode7.imagetable.new("images/full-car")
     
     addCar(world, imageTable, 246, 1106, 1.5)
