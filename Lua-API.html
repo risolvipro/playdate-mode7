@@ -20,6 +20,7 @@
                                             <li data-section-id="bitmap"><a href="#section-bitmap">Bitmap</a></li>
                                             <li data-section-id="bitmapLayer"><a href="#section-bitmapLayer">Bitmap Layer</a></li>
                                             <li data-section-id="shader"><a href="#section-shader">Shader</a></li>
+                                            <li data-section-id="tilemap"><a href="#section-tilemap">Tilemap</a></li>
                                             <li data-section-id="pool"><a href="#section-pool">Pool</a></li>
                                             <li data-section-id="camera"><a href="#section-camera">Camera</a></li>
                                             <li data-section-id="sprite"><a href="#section-sprite">Sprite</a></li>
@@ -34,7 +35,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.4.0</div>
+        <div class="version">1.5.0</div>
     </div>
 </div>        </div>
         <div class="column-page">
@@ -54,6 +55,7 @@
                                             <li data-section-id="bitmap"><a href="#section-bitmap">Bitmap</a></li>
                                             <li data-section-id="bitmapLayer"><a href="#section-bitmapLayer">Bitmap Layer</a></li>
                                             <li data-section-id="shader"><a href="#section-shader">Shader</a></li>
+                                            <li data-section-id="tilemap"><a href="#section-tilemap">Tilemap</a></li>
                                             <li data-section-id="pool"><a href="#section-pool">Pool</a></li>
                                             <li data-section-id="camera"><a href="#section-camera">Camera</a></li>
                                             <li data-section-id="sprite"><a href="#section-sprite">Sprite</a></li>
@@ -68,7 +70,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="C-API.html">Go to C API</a></div>
-        <div class="version">1.4.0</div>
+        <div class="version">1.5.0</div>
     </div>
 </div>                </div>
 
@@ -290,6 +292,108 @@
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Returns the ceiling color to be used for the out-of-bounds space.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-world-setPlaneTilemap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:setPlaneTilemap(tilemap)</span><a href="Lua-API.html#def-world-setPlaneTilemap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-setPlaneTilemap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-setPlaneTilemap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->world->setPlaneTilemap(PDMode7_World *world, PDMode7_Tilemap *tilemap);</span><a href="C-API.html#def-world-setPlaneTilemap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a tilemap for the plane.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-world-getPlaneTilemap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:getPlaneTilemap() <span class="definition-return-type">mode7.tilemap</span></span><a href="Lua-API.html#def-world-getPlaneTilemap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-getPlaneTilemap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-getPlaneTilemap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Tilemap* mode7->world->getPlaneTilemap(PDMode7_World *world);</span><a href="C-API.html#def-world-getPlaneTilemap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the plane tilemap.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-world-setCeilingTilemap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:setCeilingTilemap(tilemap)</span><a href="Lua-API.html#def-world-setCeilingTilemap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-setCeilingTilemap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-setCeilingTilemap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->world->setCeilingTilemap(PDMode7_World *world, PDMode7_Tilemap *tilemap);</span><a href="C-API.html#def-world-setCeilingTilemap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a tilemap for the ceiling.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-world-getCeilingTilemap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:getCeilingTilemap() <span class="definition-return-type">mode7.tilemap</span></span><a href="Lua-API.html#def-world-getCeilingTilemap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-getCeilingTilemap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-getCeilingTilemap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Tilemap* mode7->world->getCeilingTilemap(PDMode7_World *world);</span><a href="C-API.html#def-world-getCeilingTilemap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the ceiling tilemap.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-world-planeColorAt" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:planeColorAt() <span class="definition-return-type">mode7.color</span></span><a href="Lua-API.html#def-world-planeColorAt" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-planeColorAt"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-planeColorAt">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Color mode7->world->planeColorAt(PDMode7_World *world, int x, int y);</span><a href="C-API.html#def-world-planeColorAt" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the color of the plane at the specified point.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-world-ceilingColorAt" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:ceilingColorAt() <span class="definition-return-type">mode7.color</span></span><a href="Lua-API.html#def-world-ceilingColorAt" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-ceilingColorAt"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-ceilingColorAt">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Color mode7->world->ceilingColorAt(PDMode7_World *world, int x, int y);</span><a href="C-API.html#def-world-ceilingColorAt" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the color of the ceiling at the specified point.</p></div>
                                                                     </div>
                             </div>
                                                                                                             <div id="def-world-worldToDisplayPoint" class="definition" definition>
@@ -1197,6 +1301,23 @@ mode7.display.kDitherBayer8x8</pre></div>
                                                                                                                     <div class="definition-block definition-note last"><p>If alpha < 255, it also creates a mask managed by the bitmap.</p></div>
                                                                     </div>
                             </div>
+                                                                                                            <div id="def-bitmap-copy" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.bitmap:copy(src) <span class="definition-return-type">mode7.bitmap</span></span><a href="Lua-API.html#def-bitmap-copy" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-bitmap-copy"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-bitmap-copy">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Bitmap* mode7->bitmap->copyBitmap(PDMode7_Bitmap *src);</span><a href="C-API.html#def-bitmap-copy" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Returns a copy of the bitmap. The mask, if it exists, is copied too.</p></div>
+                                                                    </div>
+                            </div>
                                                                                                             <div id="def-bitmap-getSize" class="definition" definition>
                                 <div class="definition-header">
                                     <div class="definition-header-primary">
@@ -1840,6 +1961,114 @@ mode7.display.kDitherBayer8x8</pre></div>
                                                                     </div>
                                 <div class="definition-content">
                                                                                                                                                         <div class="definition-block definition-description last"><p>Gets the inverted flag of the shader.</p></div>
+                                                                    </div>
+                            </div>
+                                            </div>
+                </section>
+                                                <section>
+                    <h2 id="section-tilemap">🗺️ Tilemap</h2>
+                    <div class="section-description"><p>A tilemap allows to divide the plane into a grid of tiles.</p><p>When you set a tilemap, the plane bitmap is ignored.</p><p>You need to compile the library with the macro <b>PD_MODE7_TILEMAP 1</b> to use this feature.</p></div>
+                    <div class="definitions">
+                                                                                                            <div id="def-world-newTilemap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:newTilemap(tileWidth, tileHeight) <span class="definition-return-type">mode7.tilemap</span></span><a href="Lua-API.html#def-world-newTilemap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-world-newTilemap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-world-newTilemap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Tilemap* mode7->world->newTilemap(PDMode7_World *world, int tileWidth, int tileHeight);</span><a href="C-API.html#def-world-newTilemap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Creates new tilemap from world. <i>tileWidth</i> and <i>tileHeight</i> values must be a power of 2.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-tilemap-setBitmapAtPosition" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:setBitmapAtPosition(bitmap, row, column)</span><a href="Lua-API.html#def-tilemap-setBitmapAtPosition" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-tilemap-setBitmapAtPosition"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-tilemap-setBitmapAtPosition">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->tilemap->setBitmapAtPosition(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int row, int column);</span><a href="C-API.html#def-tilemap-setBitmapAtPosition" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a bitmap at the specified position. Row and column start at 0.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-tilemap-setBitmapAtRange" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:setBitmapAtRange(bitmap, startRow, startColumn, endRow, endColumn)</span><a href="Lua-API.html#def-tilemap-setBitmapAtRange" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-tilemap-setBitmapAtRange"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-tilemap-setBitmapAtRange">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->tilemap->setBitmapAtRange(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int startRow, int startColumn, int endRow, int endColumn);</span><a href="C-API.html#def-tilemap-setBitmapAtRange" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a bitmap at the specified range (from start position to end position). Row and column start at 0, pass -1 as <i>endRow</i> or <i>endColumn</i> to express the highest row or column in the grid. For example, (0, 0, -1, -1) will set the bitmap to the entire grid.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-tilemap-getBitmapAtPosition" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:getBitmapAtPosition(row, column) <span class="definition-return-type">mode7.bitmap</span></span><a href="Lua-API.html#def-tilemap-getBitmapAtPosition" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-tilemap-getBitmapAtPosition"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-tilemap-getBitmapAtPosition">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Bitmap* mode7->tilemap->getBitmapAtPosition(PDMode7_Tilemap *tilemap, int row, int column);</span><a href="C-API.html#def-tilemap-getBitmapAtPosition" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets the bitmap at the specified position.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-tilemap-setFillBitmap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:setFillBitmap(bitmap)</span><a href="Lua-API.html#def-tilemap-setFillBitmap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-tilemap-setFillBitmap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-tilemap-setFillBitmap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">void mode7->tilemap->setFillBitmap(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap);</span><a href="C-API.html#def-tilemap-setFillBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a bitmap to be used for the out-of-bounds space.</p></div>
+                                                                    </div>
+                            </div>
+                                                                                                            <div id="def-tilemap-setFillBitmap" class="definition" definition>
+                                <div class="definition-header">
+                                    <div class="definition-header-primary">
+                                        <div class="definition-header-left"><div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:getFillBitmap()</span><a href="Lua-API.html#def-tilemap-setFillBitmap" class="definition-permalink" permalink>#</a></div></div>
+                                        <div class="definition-header-right">
+                                            <a href="javascript:;" class="more-button" data-more="more-tilemap-setFillBitmap"><svg class="icon icon--small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 12 16 19 9"></polyline>
+</svg></a>
+                                        </div>
+                                    </div>
+                                                                            <div class="definition-header-more" id="more-tilemap-setFillBitmap">
+                                            <div class="definition-title"><span class="definition-language">C</span><span class="definition-title-label">PDMode7_Bitmap* mode7->tilemap->getFillBitmap(PDMode7_Tilemap *tilemap);</span><a href="C-API.html#def-tilemap-setFillBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
+                                                                    </div>
+                                <div class="definition-content">
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Gets a bitmap to be used for the out-of-bounds space.</p></div>
                                                                     </div>
                             </div>
                                             </div>
@@ -3302,7 +3531,7 @@ end frame-1
         </div>
     </div>
     <script type="text/javascript">
-                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"bitmapLayer","title":"Bitmap Layer"},{"id":"shader","title":"Shader"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"performance-tips","title":"Performance tips"},{"id":"blender","title":"Blender"},{"id":"tools","title":"Tools"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
+                const sectionsData = [{"id":"setup","title":"Setup"},{"id":"world","title":"World"},{"id":"worldConfiguration","title":"World Configuration"},{"id":"display","title":"Display"},{"id":"background","title":"Background"},{"id":"bitmap","title":"Bitmap"},{"id":"bitmapLayer","title":"Bitmap Layer"},{"id":"shader","title":"Shader"},{"id":"tilemap","title":"Tilemap"},{"id":"pool","title":"Pool"},{"id":"camera","title":"Camera"},{"id":"sprite","title":"Sprite"},{"id":"spriteInstance","title":"Sprite Instance"},{"id":"spriteDataSource","title":"Sprite Data Source"},{"id":"primitives","title":"Primitives"},{"id":"performance-tips","title":"Performance tips"},{"id":"blender","title":"Blender"},{"id":"tools","title":"Tools"},{"id":"lua-autocomplete","title":"Lua autocomplete"}];
 
         class Application {
             constructor() {
