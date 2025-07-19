@@ -169,7 +169,7 @@ typedef struct PDMode7_RadialShader {
 
 typedef struct PDMode7_Tile {
     PDMode7_Bitmap *bitmap;
-    float scaleInv;
+    int scale_log;
 } PDMode7_Tile;
 
 typedef struct PDMode7_Tilemap {
@@ -181,7 +181,7 @@ typedef struct PDMode7_Tilemap {
     int columns;
     PDMode7_Tile *tiles;
     PDMode7_Bitmap *fillBitmap;
-    float fillBitmapScaleInv;
+    int fillBitmapScale_log;
     LuaUDObject *luaRef;
 } PDMode7_Tilemap;
 
@@ -1167,28 +1167,22 @@ static inline uint8_t planeColorAt(PDMode7_World *world, PDMode7_Plane *plane, i
             int column = x >> tilemap->tileWidth_log;
             int row = y >> tilemap->tileHeight_log;
             
-            if(column < tilemap->columns && row < tilemap->rows)
+            PDMode7_Tile *tile = &tilemap->tiles[row * tilemap->columns + column];
+            
+            int tileX = (x & (tilemap->tileWidth - 1)) >> tile->scale_log;
+            int tileY = (y & (tilemap->tileHeight - 1)) >> tile->scale_log;
+            
+            if(tile->bitmap)
             {
-                PDMode7_Tile *tile = &tilemap->tiles[row * tilemap->columns + column];
-                
-                int tileX = floorf((int)(x & (tilemap->tileWidth - 1)) * tile->scaleInv);
-                int tileY = floorf((int)(y & (tilemap->tileHeight - 1)) * tile->scaleInv);
-                
-                if(tile->bitmap && tileX >= 0 && tileX < tile->bitmap->width && tileY >= 0 && tileY < tile->bitmap->height)
-                {
-                    return tile->bitmap->data[tileY * tile->bitmap->width + tileX];
-                }
+                return tile->bitmap->data[tileY * tile->bitmap->width + tileX];
             }
         }
         else if(tilemap->fillBitmap)
         {
-            int tileX = floorf((int)(x & (tilemap->tileWidth - 1)) * tilemap->fillBitmapScaleInv);
-            int tileY = floorf((int)(y & (tilemap->tileHeight - 1)) * tilemap->fillBitmapScaleInv);
+            int tileX = (x & (tilemap->tileWidth - 1)) >> tilemap->fillBitmapScale_log;
+            int tileY = (y & (tilemap->tileHeight - 1)) >> tilemap->fillBitmapScale_log;
             
-            if(tileX >= 0 && tileX < tilemap->fillBitmap->width && tileY >= 0 && tileY < tilemap->fillBitmap->height)
-            {
-                return tilemap->fillBitmap->data[tileY * tilemap->fillBitmap->width + tileX];
-            }
+            return tilemap->fillBitmap->data[tileY * tilemap->fillBitmap->width + tileX];
         }
     }
     else if(bitmap && x >= 0 && x < bitmap->width && y >= 0 && y < bitmap->height)
@@ -3207,6 +3201,11 @@ static void freeRadialShader(PDMode7_RadialShader *radial)
     playdate->system->realloc(radial, 0);
 }
 
+static int tileScaleIsValid(int scale)
+{
+    return (scale == 1 || (scale % 2) == 0);
+}
+
 static PDMode7_Tilemap* newTilemap(PDMode7_World *world, int tileWidth, int tileHeight)
 {
     int valid = (tileWidth > 0 && tileHeight > 0 && (tileWidth % 2) == 0 && (tileHeight % 2) == 0);
@@ -3234,11 +3233,11 @@ static PDMode7_Tilemap* newTilemap(PDMode7_World *world, int tileWidth, int tile
     {
         PDMode7_Tile *tile = &tilemap->tiles[i];
         tile->bitmap = NULL;
-        tile->scaleInv = 0;
+        tile->scale_log = 0;
     }
     
     tilemap->fillBitmap = NULL;
-    tilemap->fillBitmapScaleInv = 0;
+    tilemap->fillBitmapScale_log = 0;
     tilemap->luaRef = NULL;
     
     return tilemap;
@@ -3246,10 +3245,17 @@ static PDMode7_Tilemap* newTilemap(PDMode7_World *world, int tileWidth, int tile
 
 static void tilemapSetBitmapAtIndex(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap, int index)
 {
+    int scale = bitmap ? tilemap->tileWidth / bitmap->width : 1;
+    int valid = tileScaleIsValid(scale);
+    if(!valid)
+    {
+        return;
+    }
+    
     if(index >= 0 && index < (tilemap->rows * tilemap->columns))
     {
         PDMode7_Tile *tile = &tilemap->tiles[index];
-        
+                
         if(bitmap && bitmap->luaRef)
         {
             GC_retain(bitmap->luaRef);
@@ -3262,7 +3268,7 @@ static void tilemapSetBitmapAtIndex(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bi
         }
         
         tile->bitmap = bitmap;
-        tile->scaleInv = bitmap ? (float)bitmap->width / tilemap->tileWidth : 0;
+        tile->scale_log = log2_int(scale);
     }
 }
 
@@ -3312,6 +3318,13 @@ static void tilemapSetBitmapAtIndexes(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *
 
 static void tilemapSetFillBitmap(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitmap)
 {
+    int scale = bitmap ? tilemap->tileWidth / bitmap->width : 1;
+    int valid = tileScaleIsValid(scale);
+    if(!valid)
+    {
+        return;
+    }
+    
     if(bitmap && bitmap->luaRef)
     {
         GC_retain(bitmap->luaRef);
@@ -3324,20 +3337,12 @@ static void tilemapSetFillBitmap(PDMode7_Tilemap *tilemap, PDMode7_Bitmap *bitma
     }
     
     tilemap->fillBitmap = bitmap;
-    tilemap->fillBitmapScaleInv = bitmap ? (float)bitmap->width / tilemap->tileWidth : 0;
+    tilemap->fillBitmapScale_log = log2_int(scale);
 }
 
 static PDMode7_Bitmap* tilemapGetFillBitmap(PDMode7_Tilemap *tilemap)
 {
     return tilemap->fillBitmap;
-}
-
-static void releaseTilemap(PDMode7_Tilemap *tilemap)
-{
-    if(tilemap->luaRef)
-    {
-        GC_release(tilemap->luaRef);
-    }
 }
 
 static void freeTilemap(PDMode7_Tilemap *tilemap)

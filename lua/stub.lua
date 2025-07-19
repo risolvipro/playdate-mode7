@@ -729,7 +729,7 @@ function mode7.shader.radial:setInverted(inverted) end
 ---@return boolean
 function mode7.shader.radial:getInverted() return false end
 
---- Creates new tilemap from world. tileWidth and tileHeight values must be a power of 2.
+--- Creates new tilemap from world. tileWidth and tileHeight values must be a power of two.
 ---
 --- https://risolvipro.github.io/playdate-mode7/Lua-API.html#def-world-newTilemap
 ---@param tileWidth number
