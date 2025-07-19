@@ -34,7 +34,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="Lua-API.html">Go to Lua API</a></div>
-        <div class="version">1.5.0</div>
+        <div class="version">1.5.1</div>
     </div>
 </div>        </div>
         <div class="column-page">
@@ -68,7 +68,7 @@
     </div>
     <div class="menu-footer">
         <div class="secondary-docs"><a href="Lua-API.html">Go to Lua API</a></div>
-        <div class="version">1.5.0</div>
+        <div class="version">1.5.1</div>
     </div>
 </div>                </div>
 
@@ -2117,7 +2117,7 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                             <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.world:newTilemap(tileWidth, tileHeight) <span class="definition-return-type">mode7.tilemap</span></span><a href="Lua-API.html#def-world-newTilemap" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Creates new tilemap from world. <i>tileWidth</i> and <i>tileHeight</i> values must be a power of 2.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description last"><p>Creates new tilemap from world. <i>tileWidth</i> and <i>tileHeight</i> values must be a power of two.</p></div>
                                                                     </div>
                             </div>
                                                                                                             <div id="def-tilemap-setBitmapAtPosition" class="definition" definition>
@@ -2134,7 +2134,8 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                             <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:setBitmapAtPosition(bitmap, row, column)</span><a href="Lua-API.html#def-tilemap-setBitmapAtPosition" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a bitmap at the specified position. Row and column start at 0.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets a bitmap at the specified position. Row and column start at 0.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>The bitmap size must be a power of two. If the tile size is 64x64, the bitmap can be 64x64, 32x32, 16x16 and so on.</p></div>
                                                                     </div>
                             </div>
                                                                                                             <div id="def-tilemap-setBitmapAtRange" class="definition" definition>
@@ -2151,7 +2152,8 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                             <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:setBitmapAtRange(bitmap, startRow, startColumn, endRow, endColumn)</span><a href="Lua-API.html#def-tilemap-setBitmapAtRange" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a bitmap at the specified range (from start position to end position). Row and column start at 0, pass -1 as <i>endRow</i> or <i>endColumn</i> to express the highest row or column in the grid. For example, (0, 0, -1, -1) will set the bitmap to the entire grid.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets a bitmap at the specified range (from start position to end position). Row and column start at 0, pass -1 as <i>endRow</i> or <i>endColumn</i> to express the highest row or column in the grid. For example, (0, 0, -1, -1) will set the bitmap to the entire grid.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>The bitmap size must be a power of two. If the tile size is 64x64, the bitmap can be 64x64, 32x32, 16x16 and so on.</p></div>
                                                                     </div>
                             </div>
                                                                                                             <div id="def-tilemap-setBitmapAtIndexes" class="definition" definition>
@@ -2166,7 +2168,8 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                     </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a bitmap at the specified indexes. Pass an array of integers calculated as row * columns + column.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets a bitmap at the specified indexes. Pass an array of integers calculated as row * columns + column.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>The bitmap size must be a power of two. If the tile size is 64x64, the bitmap can be 64x64, 32x32, 16x16 and so on.</p></div>
                                                                     </div>
                             </div>
                                                                                                             <div id="def-tilemap-getBitmapAtPosition" class="definition" definition>
@@ -2200,7 +2203,8 @@ float widthOnDisplay = spriteWidth * multiplier.x;</pre></div>
                                             <div class="definition-title"><span class="definition-language">Lua</span><span class="definition-title-label">mode7.tilemap:setFillBitmap(bitmap)</span><a href="Lua-API.html#def-tilemap-setFillBitmap" class="definition-permalink" permalink>#</a></div>                                        </div>
                                                                     </div>
                                 <div class="definition-content">
-                                                                                                                                                        <div class="definition-block definition-description last"><p>Sets a bitmap to be used for the out-of-bounds space.</p></div>
+                                                                                                                                                        <div class="definition-block definition-description"><p>Sets a bitmap to be used for the out-of-bounds space.</p></div>
+                                                                                                                    <div class="definition-block definition-note last"><p>The bitmap size must be a power of two. If the tile size is 64x64, the bitmap can be 64x64, 32x32, 16x16 and so on.</p></div>
                                                                     </div>
                             </div>
                                                                                                             <div id="def-tilemap-setFillBitmap" class="definition" definition>
