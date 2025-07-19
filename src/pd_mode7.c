@@ -169,7 +169,7 @@ typedef struct PDMode7_RadialShader {
 
 typedef struct PDMode7_Tile {
     PDMode7_Bitmap *bitmap;
-    int scale_log;
+    uint8_t scale_log;
 } PDMode7_Tile;
 
 typedef struct PDMode7_Tilemap {
@@ -181,7 +181,7 @@ typedef struct PDMode7_Tilemap {
     int columns;
     PDMode7_Tile *tiles;
     PDMode7_Bitmap *fillBitmap;
-    int fillBitmapScale_log;
+    uint8_t fillBitmapScale_log;
     LuaUDObject *luaRef;
 } PDMode7_Tilemap;
 
