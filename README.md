@@ -28,6 +28,6 @@ The library has a simplified Lua setup:
 
 The assets included in the demo (track-0, full-car) are part of [P-Racing](https://play.date/games/p-racing/), please don't use them in your final game.
 
-### AI Disclosure
+## AI Disclosure
 
 AI was not used to develop this library.
